@@ -1,0 +1,562 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Halls – UTAS HMS</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: var(--gray-100); }
+
+    /* Hero */
+    .halls-hero {
+      position: relative;
+      height: 240px;
+      background: linear-gradient(160deg, #0f1c35 0%, #1a2a4a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+    .halls-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%230f1c35"/><line x1="0" y1="50" x2="100" y2="50" stroke="%23ffffff08" stroke-width="0.5"/><line x1="50" y1="0" x2="50" y2="100" stroke="%23ffffff08" stroke-width="0.5"/></svg>'),
+        linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+    }
+    /* Bunk bed icon simulation */
+    .hero-bg-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 120px;
+      opacity: 0.05;
+      pointer-events: none;
+    }
+    .halls-hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+    }
+    .halls-hero-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .halls-hero-title span { color: var(--accent); }
+    .halls-hero-subtitle {
+      font-size: 15px;
+      color: rgba(255,255,255,0.75);
+      max-width: 300px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Filters panel */
+    .filters-panel {
+      background: var(--white);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 20px 16px 12px;
+      margin-top: -20px;
+      position: relative;
+      z-index: 2;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-400);
+      font-size: 16px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 12px 12px 12px 42px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-full);
+      font-size: 14px;
+      color: var(--gray-700);
+      background: var(--gray-50);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--blue); background: #fff; }
+
+    .filter-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-500);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .filter-pill {
+      padding: 7px 16px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--gray-200);
+      background: var(--white);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+
+    /* Hall cards */
+    .halls-list {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hall-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .hall-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+    .hall-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      position: relative;
+      background: linear-gradient(135deg, #1a2a4a 0%, #2d3f60 100%);
+    }
+
+    .hall-img-wrap {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+    /* Realistic bunk bed room illustration using CSS */
+    .hall-img-illustration {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #c8d8e8 0%, #a0b8d0 40%, #788090 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .hall-img-illustration::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60%;
+      background: linear-gradient(0deg, #3a3a4a 0%, #4a4a5a 60%, transparent 100%);
+    }
+    .hall-img-illustration::after {
+      content: '';
+      position: absolute;
+      bottom: 20px; left: 20px;
+      width: 70px; height: 80px;
+      background: #5a4a3a;
+      border-radius: 4px;
+      box-shadow: 85px 0 0 #5a4a3a, 0 -50px 0 #6a5a4a, 85px -50px 0 #6a5a4a;
+    }
+
+    .hall-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.7) 100%);
+    }
+    .hall-name-overlay {
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
+      right: 14px;
+    }
+    .hall-name-text {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .hall-gender-tag {
+      display: inline-block;
+      background: rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.9);
+      padding: 3px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Bunk bed scene using SVG-like CSS art */
+    .bunk-scene {
+      width: 100%; height: 100%;
+      background: #c5d5e5;
+      position: relative;
+      overflow: hidden;
+    }
+    .bunk-scene .wall { position: absolute; inset: 0; background: linear-gradient(180deg, #d5e5f5 0%, #b0c8e0 100%); }
+    .bunk-scene .floor { position: absolute; bottom: 0; left: 0; right: 0; height: 35%; background: #8090a0; }
+    .bunk-scene .window {
+      position: absolute;
+      top: 15%; right: 20%;
+      width: 80px; height: 90px;
+      background: linear-gradient(135deg, #a0c8e8 0%, #d0e8f8 100%);
+      border: 3px solid #7090b0;
+      border-radius: 2px;
+    }
+    .bunk-scene .window::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 0; right: 0;
+      height: 2px; background: #7090b0;
+    }
+    .bunk-scene .window::before {
+      content: '';
+      position: absolute;
+      left: 50%; top: 0; bottom: 0;
+      width: 2px; background: #7090b0;
+    }
+    .bunk-scene .bunk {
+      position: absolute;
+      bottom: 35%;
+      left: 8%;
+      width: 50%;
+    }
+    .bunk-scene .bed-frame {
+      width: 100%;
+      height: 25px;
+      background: #5a4030;
+      border-radius: 3px;
+      position: relative;
+    }
+    .bunk-scene .mattress {
+      position: absolute;
+      top: -12px; left: 5%; right: 5%;
+      height: 12px;
+      background: #e8e0d8;
+      border-radius: 2px;
+    }
+    .bunk-scene .pillow {
+      position: absolute;
+      top: -10px; right: 10%;
+      width: 20px; height: 10px;
+      background: #f8f0e8;
+      border-radius: 3px;
+    }
+    .bunk-scene .post {
+      position: absolute;
+      top: -80px;
+      width: 8px;
+      height: 80px;
+      background: #5a4030;
+      border-radius: 2px;
+    }
+    .bunk-scene .upper-bed {
+      position: absolute;
+      top: -95px; left: 0; right: 0;
+    }
+
+    .hall-card-body {
+      padding: 16px;
+    }
+
+    .hall-stats-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .hall-stat-box {
+      flex: 1;
+      background: var(--gray-50);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+    .hall-stat-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--blue);
+      line-height: 1;
+    }
+    .hall-stat-num.total { color: var(--gray-800); }
+    .hall-stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gray-400);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .hall-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hall-price-period { font-size: 12px; color: var(--gray-500); margin-bottom: 3px; }
+    .hall-price { font-size: 22px; font-weight: 800; color: var(--primary); }
+
+    .hall-arrow-btn {
+      width: 44px; height: 44px;
+      background: var(--gray-900);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 18px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .hall-arrow-btn:hover { background: var(--primary); }
+
+    /* Color themes per hall */
+    .bunk-1 { background: linear-gradient(135deg, #c5d5e5 0%, #8090a0 100%); }
+    .bunk-2 { background: linear-gradient(135deg, #d5c5e5 0%, #9080a0 100%); }
+    .bunk-3 { background: linear-gradient(135deg, #c5e5d5 0%, #80a090 100%); }
+
+    .no-results {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--gray-400);
+      display: none;
+    }
+    .no-results.show { display: block; }
+  </style>
+</head>
+<body>
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="nav-logo">
+      <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius:8px;">
+        <circle cx="18" cy="18" r="16" fill="#fff" stroke="#8B0000" stroke-width="2"/>
+        <circle cx="18" cy="18" r="9" fill="#8B0000"/>
+        <circle cx="18" cy="18" r="4" fill="#fff"/>
+      </svg>
+      <div class="nav-logo-text">
+        <div class="brand">UTAS</div>
+        <div class="sub">Accommodation</div>
+      </div>
+    </div>
+    <button class="hamburger" onclick="openSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="border-radius:8px;background:#fff;">
+          <circle cx="18" cy="18" r="14" fill="#fff" stroke="#8B0000" stroke-width="1.5"/>
+          <circle cx="18" cy="18" r="7" fill="#8B0000"/>
+          <circle cx="18" cy="18" r="3" fill="#fff"/>
+        </svg>
+        <div class="sidebar-logo-text">
+          <div class="brand">UTAS HMS</div>
+          <div class="sub">STUDENT PORTAL</div>
+        </div>
+      </div>
+      <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+    </div>
+    <div class="sidebar-nav">
+      <div class="sidebar-section-label">Accommodation</div>
+      <a href="dashboard.html" class="sidebar-item"><span class="icon">📊</span> Dashboard</a>
+      <a href="halls.html" class="sidebar-item active"><span class="icon">🏢</span> Browse Halls</a>
+      <a href="#" class="sidebar-item"><span class="icon">🔖</span> My Bookings</a>
+      <a href="#" class="sidebar-item"><span class="icon">💵</span> Payments</a>
+      <a href="#" class="sidebar-item"><span class="icon">🔔</span> Notifications</a>
+      <div class="sidebar-section-label">Explore</div>
+      <a href="#" class="sidebar-item"><span class="icon">🗺</span> External Hostels</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebarAvatar">A</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebarName">STUDENT</div>
+          <div class="sidebar-user-id"   id="sidebarId">—</div>
+        </div>
+      </div>
+      <a href="sso.html" class="sidebar-logout"><span>↩</span> Logout</a>
+    </div>
+  </aside>
+
+  <!-- Hero -->
+  <div class="halls-hero">
+    <div class="hero-bg-icon">🛏</div>
+    <div class="halls-hero-content">
+      <div class="halls-hero-title">Our <span>Halls</span></div>
+      <div class="halls-hero-subtitle">Comfortable, secure, and conducive living spaces designed to support your academic journey.</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-panel">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="hallSearch" placeholder="Search by hall name..." oninput="filterHalls()" />
+    </div>
+    <div class="filter-section-label">Gender Filter</div>
+    <div class="filter-pills">
+      <button class="filter-pill active" onclick="setGender('all', this)">All Halls</button>
+      <button class="filter-pill" onclick="setGender('male', this)">Male</button>
+      <button class="filter-pill" onclick="setGender('female', this)">Female</button>
+    </div>
+  </div>
+
+  <!-- Halls List -->
+  <div class="halls-list" id="hallsList">
+
+    <!-- ECOWAS Hall -->
+    <a href="hall-detail.html?hall=ecowas" class="hall-card" data-name="ecowas hall" data-gender="male">
+      <div class="hall-img-wrap">
+        <img src="hall-room.jpg" alt="ECOWAS Hall" style="width:100%;height:200px;object-fit:cover;object-position:center;display:block;" />
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,0.65) 100%);"></div>
+        <div class="hall-name-overlay">
+          <div class="hall-name-text">ECOWAS Hall</div>
+          <div class="hall-gender-tag">Male Hall</div>
+        </div>
+      </div>
+      <div class="hall-card-body">
+        <div class="hall-stats-row">
+          <div class="hall-stat-box">
+            <div class="hall-stat-num">18</div>
+            <div class="hall-stat-label">Available Rooms</div>
+          </div>
+          <div class="hall-stat-box">
+            <div class="hall-stat-num total">24</div>
+            <div class="hall-stat-label">Total Rooms</div>
+          </div>
+        </div>
+        <div class="hall-price-row">
+          <div>
+            <div class="hall-price-period">Per Academic Year</div>
+            <div class="hall-price">GHS 2,500</div>
+          </div>
+          <span class="hall-arrow-btn">↗</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- NAVRO Hall -->
+    <a href="hall-detail.html?hall=navro" class="hall-card" data-name="navro hall" data-gender="female">
+      <div class="hall-img-wrap">
+        <img src="hall-room.jpg" alt="Navro Hall" style="width:100%;height:200px;object-fit:cover;object-position:center;display:block;" />
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,0.65) 100%);"></div>
+        <div class="hall-name-overlay">
+          <div class="hall-name-text">Navro Hall</div>
+          <div class="hall-gender-tag">Female Hall</div>
+        </div>
+      </div>
+      <div class="hall-card-body">
+        <div class="hall-stats-row">
+          <div class="hall-stat-box">
+            <div class="hall-stat-num">21</div>
+            <div class="hall-stat-label">Available Rooms</div>
+          </div>
+          <div class="hall-stat-box">
+            <div class="hall-stat-num total">39</div>
+            <div class="hall-stat-label">Total Rooms</div>
+          </div>
+        </div>
+        <div class="hall-price-row">
+          <div>
+            <div class="hall-price-period">Per Academic Year</div>
+            <div class="hall-price">GHS 2,500</div>
+          </div>
+          <span class="hall-arrow-btn">↗</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="no-results" id="noResults">
+    <div style="font-size:40px;margin-bottom:12px;">🏢</div>
+    <div style="font-size:15px;font-weight:600;color:var(--gray-500);">No halls found</div>
+    <div style="font-size:13px;color:var(--gray-400);margin-top:6px;">Try a different search or filter</div>
+  </div>
+
+  <footer class="site-footer">
+    © 2026 University of Technology and Applied Sciences. All Rights Reserved.
+  </footer>
+
+  <script>
+    // Load student data from sessionStorage
+    (function() {
+      const name    = sessionStorage.getItem('utas_name')    || 'STUDENT';
+      const id      = sessionStorage.getItem('utas_id')      || '—';
+      const initial = sessionStorage.getItem('utas_initial') || name.charAt(0);
+      const el  = document.getElementById('sidebarName');
+      const elId = document.getElementById('sidebarId');
+      const elAv = document.getElementById('sidebarAvatar');
+      if (el)   el.textContent  = name;
+      if (elId) elId.textContent = id;
+      if (elAv) elAv.textContent = initial;
+    })();
+
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('active');
+      document.getElementById('overlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('active');
+      document.getElementById('overlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    let genderFilter = 'all';
+
+    function setGender(g, btn) {
+      genderFilter = g;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      filterHalls();
+    }
+
+    function filterHalls() {
+      const q = document.getElementById('hallSearch').value.toLowerCase();
+      const cards = document.querySelectorAll('#hallsList .hall-card');
+      let visible = 0;
+
+      cards.forEach(card => {
+        const name = card.dataset.name;
+        const gender = card.dataset.gender;
+        const matchSearch = name.includes(q);
+        const matchGender = genderFilter === 'all' || gender === genderFilter;
+        if (matchSearch && matchGender) {
+          card.style.display = '';
+          visible++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      document.getElementById('noResults').classList.toggle('show', visible === 0);
+    }
+  </script>
+</body>
+</html>
