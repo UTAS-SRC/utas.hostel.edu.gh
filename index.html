@@ -1,0 +1,1969 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="UTAS Hostel Management System – Student Accommodation Portal"/>
+  <title>UTAS HMS – Student Portal</title>
+  <style>
+    /* ============================================================
+       RESET & VARIABLES
+    ============================================================ */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --primary:       #8B0000;
+      --primary-dark:  #6b0000;
+      --primary-light: #a31515;
+      --accent:        #d4a017;
+      --navy:          #0f1c35;
+      --navy2:         #1a2a4a;
+      --blue:          #2563eb;
+      --blue-dark:     #1d4ed8;
+      --green:         #16a34a;
+      --purple:        #7c3aed;
+      --w:    #ffffff;
+      --g50:  #f9fafb;
+      --g100: #f3f4f6;
+      --g200: #e5e7eb;
+      --g300: #d1d5db;
+      --g400: #9ca3af;
+      --g500: #6b7280;
+      --g600: #4b5563;
+      --g700: #374151;
+      --g800: #1f2937;
+      --g900: #111827;
+      --sh:   0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+      --shm:  0 4px 6px rgba(0,0,0,.07),  0 2px 4px rgba(0,0,0,.05);
+      --shl:  0 10px 15px rgba(0,0,0,.10), 0 4px 6px rgba(0,0,0,.05);
+      --r:    12px;
+      --rl:   16px;
+      --rxl:  20px;
+      --rf:   9999px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Georgia','Times New Roman',Times,serif;
+      background: var(--g100);
+      color: var(--g900);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    h1,h2,h3,h4,h5,h6 { font-family:'Georgia','Times New Roman',Times,serif; line-height:1.2; }
+    input,button,select,textarea { font-family:'Georgia','Times New Roman',Times,serif; }
+    a { text-decoration:none; color:inherit; }
+    img { display:block; }
+    button { cursor:pointer; }
+
+    /* ============================================================
+       PAGE SYSTEM – show/hide views
+    ============================================================ */
+    .view { display:none; min-height:100vh; }
+    .view.active { display:block; }
+
+    /* ============================================================
+       SCROLLBAR
+    ============================================================ */
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-thumb { background:var(--g300); border-radius:2px; }
+
+    /* ============================================================
+       LOADING SCREEN
+    ============================================================ */
+    #loadingScreen {
+      position:fixed; inset:0; z-index:9999;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--primary-dark) 100%);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:20px;
+      transition: opacity .5s ease;
+    }
+    #loadingScreen.fade-out { opacity:0; pointer-events:none; }
+    .loader-logo { width:72px; height:72px; animation: pulse 1.4s ease-in-out infinite; }
+    .loader-ring {
+      width:40px; height:40px;
+      border:3px solid rgba(255,255,255,.2);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation: spin .8s linear infinite;
+    }
+    .loader-text { color:rgba(255,255,255,.7); font-size:13px; letter-spacing:2px; text-transform:uppercase; }
+    @keyframes spin  { to { transform:rotate(360deg); } }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+    /* ============================================================
+       TOP NAV
+    ============================================================ */
+    .top-nav {
+      background:var(--w);
+      border-bottom:1px solid var(--g200);
+      padding:0 16px;
+      height:56px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .nav-logo { display:flex; align-items:center; gap:10px; }
+    .nav-logo-text .brand { font-size:15px; font-weight:800; color:var(--primary); }
+    .nav-logo-text .sub   { font-size:10px; color:var(--accent); font-weight:700; letter-spacing:.5px; }
+    .nav-breadcrumb { display:flex; align-items:center; gap:6px; font-size:14px; }
+    .nav-breadcrumb .brand-link { color:var(--primary); font-weight:700; }
+    .nav-breadcrumb .sep  { color:var(--g400); }
+    .nav-breadcrumb .page { color:var(--g600); font-weight:500; }
+    .nav-right { display:flex; align-items:center; gap:10px; }
+    .nav-icon-btn {
+      width:36px; height:36px; border-radius:var(--rf);
+      border:none; background:none; font-size:18px;
+      color:var(--g600); display:flex; align-items:center; justify-content:center;
+      transition:background .15s;
+    }
+    .nav-icon-btn:hover { background:var(--g100); }
+    .nav-avatar {
+      width:34px; height:34px; border-radius:8px;
+      background:var(--primary); color:#fff;
+      font-weight:800; font-size:14px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .hamburger {
+      width:36px; height:36px; border:none; background:none;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    }
+    .hamburger span { display:block; width:22px; height:2px; background:var(--g700); border-radius:2px; transition:all .3s; }
+
+    /* ============================================================
+       SIDEBAR
+    ============================================================ */
+    .sidebar-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      z-index:200; opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .sidebar-overlay.active { opacity:1; pointer-events:all; }
+    .sidebar {
+      position:fixed; top:0; left:0; height:100vh; width:282px;
+      background:linear-gradient(180deg,#3a0000 0%,#4a0000 100%);
+      z-index:300; transform:translateX(-100%);
+      transition:transform .3s ease;
+      display:flex; flex-direction:column; overflow-y:auto;
+      box-shadow:4px 0 24px rgba(0,0,0,.3);
+    }
+    .sidebar.active { transform:translateX(0); }
+    .sidebar-header {
+      padding:18px 16px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,.1);
+    }
+    .sidebar-logo { display:flex; align-items:center; gap:10px; }
+    .sidebar-logo-text .brand { font-size:14px; font-weight:800; color:#fff; }
+    .sidebar-logo-text .sub   { font-size:9px; color:rgba(255,255,255,.5); letter-spacing:1.5px; text-transform:uppercase; }
+    .sidebar-close {
+      width:28px; height:28px; border-radius:50%; border:none;
+      background:rgba(255,255,255,.12); color:#fff; font-size:15px;
+      display:flex; align-items:center; justify-content:center; transition:background .2s;
+    }
+    .sidebar-close:hover { background:rgba(255,255,255,.22); }
+    .sidebar-section-label {
+      padding:18px 16px 6px;
+      font-size:9px; font-weight:800; color:rgba(255,255,255,.35);
+      letter-spacing:2px; text-transform:uppercase;
+    }
+    .sidebar-nav { padding:0 8px; flex:1; }
+    .sidebar-item {
+      display:flex; align-items:center; gap:12px;
+      padding:11px 12px; border-radius:10px;
+      color:rgba(255,255,255,.65); font-size:13px; font-weight:500;
+      margin-bottom:2px; transition:all .18s; cursor:pointer;
+    }
+    .sidebar-item:hover { background:rgba(255,255,255,.1); color:#fff; }
+    .sidebar-item.active { background:var(--primary); color:#fff; font-weight:700; }
+    .sidebar-item .icon { width:20px; text-align:center; font-size:15px; }
+    .sidebar-footer { padding:10px 8px 16px; border-top:1px solid rgba(255,255,255,.08); }
+    .sidebar-user { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; margin-bottom:8px; }
+    .sidebar-user-avatar {
+      width:36px; height:36px; border-radius:8px;
+      background:var(--primary); color:#fff;
+      font-weight:800; font-size:15px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .sidebar-user-name { font-size:12px; font-weight:700; color:#fff; line-height:1.3; }
+    .sidebar-user-id   { font-size:11px; color:rgba(255,255,255,.45); }
+    .sidebar-logout {
+      display:flex; align-items:center; gap:10px;
+      width:100%; padding:11px 12px; border-radius:10px;
+      background:rgba(255,255,255,.08); border:none;
+      color:rgba(255,255,255,.75); font-size:13px; font-weight:500;
+      transition:background .2s;
+    }
+    .sidebar-logout:hover { background:rgba(255,255,255,.16); }
+
+    /* ============================================================
+       PAGE CONTENT WRAPPER
+    ============================================================ */
+    .page-content { padding:16px; max-width:540px; margin:0 auto; }
+
+    /* ============================================================
+       CARDS
+    ============================================================ */
+    .card {
+      background:var(--w); border-radius:var(--rl);
+      box-shadow:var(--sh); overflow:hidden;
+    }
+
+    /* ============================================================
+       BUTTONS
+    ============================================================ */
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:14px 24px; border-radius:var(--rf);
+      font-weight:700; font-size:15px; border:none;
+      transition:all .2s; width:100%;
+    }
+    .btn-navy { background:var(--navy2); color:#fff; }
+    .btn-navy:hover { background:#243a5e; transform:translateY(-1px); box-shadow:0 6px 20px rgba(26,42,74,.3); }
+    .btn-red  { background:var(--primary); color:#fff; }
+    .btn-red:hover { background:var(--primary-dark); }
+    .btn-blue { background:var(--blue); color:#fff; }
+    .btn-blue:hover { background:var(--blue-dark); transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,.3); }
+
+    /* ============================================================
+       FORM ELEMENTS
+    ============================================================ */
+    .form-group { margin-bottom:18px; }
+    .form-label {
+      display:block; font-size:10px; font-weight:800;
+      color:var(--g700); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:7px;
+    }
+    .input-wrap { position:relative; display:flex; align-items:center; }
+    .input-icon { position:absolute; left:14px; color:var(--g400); font-size:15px; pointer-events:none; }
+    .form-input {
+      width:100%; padding:13px 14px 13px 42px;
+      border:1.5px solid var(--g200); border-radius:var(--rf);
+      font-size:14px; color:var(--g800);
+      background:var(--g50); outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .form-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.1); background:#fff; }
+    .input-suffix {
+      position:absolute; right:14px; color:var(--g400);
+      background:none; border:none; font-size:16px; padding:4px;
+    }
+    .error-msg {
+      background:#fff5f5; border:1px solid #fca5a5;
+      color:#dc2626; padding:11px 14px;
+      border-radius:10px; font-size:13px; font-weight:600;
+      margin-bottom:16px; display:none;
+    }
+    .error-msg.show { display:block; }
+
+    /* ============================================================
+       ACTION ROW
+    ============================================================ */
+    .action-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:13px 14px; border-radius:var(--r);
+      background:var(--w); border:1px solid var(--g100);
+      margin-bottom:8px; transition:all .18s; box-shadow:0 1px 2px rgba(0,0,0,.04);
+    }
+    .action-row:hover { box-shadow:var(--shm); transform:translateY(-1px); }
+    .action-row-left { display:flex; align-items:center; gap:12px; }
+    .action-row-icon {
+      width:40px; height:40px; border-radius:10px;
+      display:flex; align-items:center; justify-content:center; font-size:18px;
+    }
+    .action-row-title { font-size:14px; font-weight:700; color:var(--g800); }
+    .action-row-sub   { font-size:12px; color:var(--g400); margin-top:1px; }
+    .action-row-arrow { color:var(--g400); font-size:16px; }
+
+    /* ============================================================
+       SECTION HEADER
+    ============================================================ */
+    .section-header {
+      display:flex; align-items:center; gap:8px;
+      font-size:16px; font-weight:700; color:var(--g900); margin-bottom:14px;
+    }
+
+    /* ============================================================
+       PROGRESS BAR
+    ============================================================ */
+    .progress-wrap { background:var(--g200); border-radius:var(--rf); height:8px; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:var(--rf); background:var(--blue); transition:width .8s ease; }
+
+    /* ============================================================
+       BADGE
+    ============================================================ */
+    .badge {
+      display:inline-flex; align-items:center;
+      padding:3px 10px; border-radius:var(--rf);
+      font-size:11px; font-weight:700;
+    }
+    .badge-outline { border:1.5px solid var(--g300); color:var(--g600); }
+    .badge-green   { background:#dcfce7; color:#15803d; }
+    .badge-red     { background:#fee2e2; color:var(--primary); }
+
+    /* ============================================================
+       TOAST
+    ============================================================ */
+    #toast {
+      position:fixed; bottom:24px; left:50%;
+      transform:translateX(-50%) translateY(80px);
+      background:var(--g900); color:#fff;
+      padding:12px 22px; border-radius:var(--rf);
+      font-size:13px; font-weight:600;
+      box-shadow:var(--shl); z-index:9000;
+      transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+      white-space:nowrap; pointer-events:none;
+    }
+    #toast.show { transform:translateX(-50%) translateY(0); }
+
+    /* ============================================================
+       ====================================================
+       VIEW 1: SSO LOGIN
+       ====================================================
+    ============================================================ */
+    #viewLogin {
+      min-height:100vh;
+      background:linear-gradient(160deg,var(--navy) 0%,#0a1428 50%,#1a0a0a 100%);
+      display:none; flex-direction:column;
+      align-items:center; justify-content:center; padding:20px;
+    }
+    #viewLogin.active { display:flex; }
+
+    .login-card {
+      background:var(--w); border-radius:24px;
+      padding:30px 24px 26px; width:100%; max-width:420px;
+      box-shadow:0 28px 70px rgba(0,0,0,.45);
+      animation:slideUp .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    .logo-wrap { text-align:center; margin-bottom:22px; }
+    .logo-box {
+      width:74px; height:74px; border-radius:20px;
+      background:var(--g100); display:inline-flex;
+      align-items:center; justify-content:center; margin-bottom:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,.12);
+    }
+
+    .portal-title { font-size:25px; font-weight:800; color:var(--g900); line-height:1.15; }
+    .portal-subtitle { font-size:13px; color:var(--g400); margin-top:5px; }
+
+    .service-card {
+      background:linear-gradient(135deg,var(--navy2) 0%,var(--navy) 100%);
+      border-radius:var(--rl); padding:14px; margin-bottom:22px;
+      position:relative; overflow:hidden;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .service-card::after {
+      content:''; position:absolute;
+      top:-40px; right:-40px; width:120px; height:120px;
+      background:rgba(255,255,255,.03); border-radius:50%;
+    }
+    .service-card-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .service-avatar { width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.14); }
+    .service-badges { display:flex; align-items:center; gap:8px; flex:1; justify-content:space-between; }
+    .badge-access {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(22,163,74,.22); color:#4ade80;
+      border:1px solid rgba(74,222,128,.3);
+      padding:3px 10px; border-radius:var(--rf);
+      font-size:9px; font-weight:800; letter-spacing:.5px;
+    }
+    .badge-hms {
+      background:rgba(255,255,255,.1); color:rgba(255,255,255,.65);
+      padding:3px 9px; border-radius:6px; font-size:9px; font-weight:800;
+    }
+    .service-title { font-size:16px; font-weight:800; color:#fff; margin-bottom:3px; }
+    .service-desc  { font-size:12px; color:rgba(255,255,255,.55); margin-bottom:10px; }
+    .service-desc strong { color:rgba(255,255,255,.88); }
+    .service-link-row { display:flex; align-items:center; justify-content:space-between; }
+    .service-url  { display:flex; align-items:center; gap:5px; font-size:11px; color:rgba(255,255,255,.45); }
+    .service-url .lock { color:#4ade80; }
+    .cancel-btn   { font-size:11px; color:#60a5fa; text-decoration:underline; background:none; border:none; }
+
+    .captcha-section { margin-bottom:18px; }
+    .captcha-label-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .captcha-lbl { font-size:10px; font-weight:800; color:var(--g700); letter-spacing:1.2px; text-transform:uppercase; }
+    .refresh-btn { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--g500); background:none; border:none; }
+    .captcha-row { display:flex; align-items:center; gap:10px; }
+    .captcha-display {
+      flex:1; background:linear-gradient(135deg,#f6f9ff,#eef2ff);
+      border:1.5px solid var(--g200); border-radius:var(--r);
+      padding:9px 12px; font-family:'Courier New',monospace;
+      font-size:20px; font-weight:900; letter-spacing:7px; text-align:center;
+      position:relative; overflow:hidden;
+    }
+    .captcha-display::after {
+      content:''; position:absolute; inset:0;
+      background-image:repeating-linear-gradient(30deg,transparent,transparent 3px,rgba(100,120,200,.04) 3px,rgba(100,120,200,.04) 6px);
+    }
+    .c1{color:#2563eb;display:inline-block;transform:rotate(-8deg) translateY(2px)}
+    .c2{color:#1f2937;display:inline-block;transform:rotate(4deg)}
+    .c3{color:#ea580c;display:inline-block;transform:rotate(-4deg) translateY(-2px)}
+    .c4{color:#374151;display:inline-block;transform:rotate(6deg) translateY(3px)}
+    .c5{color:#1d4ed8;display:inline-block;transform:rotate(-6deg);font-size:22px}
+    .c6{color:#15803d;display:inline-block;transform:rotate(8deg) translateY(-1px)}
+    .captcha-num { font-size:20px; font-weight:900; color:var(--g700); min-width:24px; text-align:center; }
+
+    .sign-in-btn {
+      width:100%; padding:15px; background:var(--navy2); color:#fff;
+      border:none; border-radius:var(--rf); font-size:16px; font-weight:800;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:all .2s; margin-top:6px;
+    }
+    .sign-in-btn:hover { background:#243a5e; transform:translateY(-1px); box-shadow:0 8px 24px rgba(26,42,74,.35); }
+
+    .secured-note { text-align:center; font-size:11px; color:var(--g400); margin-top:14px; }
+    .login-footer { color:rgba(255,255,255,.35); font-size:11px; text-align:center; margin-top:22px; }
+
+    /* ============================================================
+       VIEW 2: DASHBOARD
+    ============================================================ */
+    .welcome-card {
+      background:linear-gradient(135deg,var(--primary-dark) 0%,var(--primary) 55%,var(--primary-light) 100%);
+      border-radius:var(--rxl); padding:20px; color:#fff;
+      margin-bottom:14px; position:relative; overflow:hidden;
+    }
+    .welcome-card::before {
+      content:''; position:absolute; top:-50px; right:-50px;
+      width:180px; height:180px; background:rgba(255,255,255,.05); border-radius:50%;
+    }
+    .welcome-card::after {
+      content:''; position:absolute; bottom:-60px; right:20px;
+      width:130px; height:130px; background:rgba(255,255,255,.03); border-radius:50%;
+    }
+    .welcome-tags { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .tag-student {
+      background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.2);
+      color:rgba(255,255,255,.9); padding:4px 12px;
+      border-radius:var(--rf); font-size:10px; font-weight:700; letter-spacing:.5px;
+    }
+    .tag-id {
+      background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15);
+      color:rgba(255,255,255,.8); padding:4px 12px;
+      border-radius:var(--rf); font-size:10px; font-weight:700;
+    }
+    .welcome-name { font-size:21px; font-weight:800; color:#fff; line-height:1.2; margin-bottom:7px; position:relative; z-index:1; }
+    .welcome-desc { font-size:12px; color:rgba(255,255,255,.68); line-height:1.55; position:relative; z-index:1; }
+
+    .widget-card { background:var(--w); border-radius:var(--rl); padding:18px; margin-bottom:12px; box-shadow:var(--sh); }
+    .widget-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+    .widget-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+    .icon-blue   { background:#dbeafe; }
+    .icon-purple { background:#ede9fe; }
+    .icon-red    { background:#fee2e2; }
+    .widget-badge { background:var(--g100); border:1px solid var(--g200); color:var(--g500); padding:4px 12px; border-radius:var(--rf); font-size:10px; font-weight:700; }
+    .widget-big { font-size:25px; font-weight:800; color:var(--g300); margin-bottom:4px; }
+    .widget-sub { font-size:12px; color:var(--g400); margin-bottom:14px; }
+    .widget-btn {
+      width:100%; padding:11px; border-radius:var(--rf);
+      background:var(--g900); border:none; color:#fff;
+      font-size:13px; font-weight:700; display:flex;
+      align-items:center; justify-content:center; gap:6px; transition:all .18s;
+    }
+    .widget-btn:hover { background:var(--primary); }
+
+    .balance-num { font-size:28px; font-weight:800; color:var(--g300); margin-bottom:4px; }
+    .balance-sub { font-size:12px; color:var(--g400); margin-bottom:14px; }
+    .balance-info {
+      display:flex; align-items:center; gap:6px;
+      background:var(--g50); border:1px solid var(--g100);
+      border-radius:var(--rf); padding:10px 16px;
+      font-size:12px; color:var(--g500); justify-content:center;
+    }
+    .msg-num   { font-size:38px; font-weight:800; color:var(--g900); line-height:1; margin-bottom:4px; }
+    .msg-lbl   { font-size:12px; color:var(--g500); margin-bottom:16px; }
+    .inbox-btn {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; padding:12px 16px; border-radius:var(--r);
+      border:1px solid var(--g200); background:var(--g50);
+      color:var(--g700); font-size:13px; font-weight:700;
+      transition:background .18s;
+    }
+    .inbox-btn:hover { background:var(--g100); }
+
+    .quick-card  { background:var(--w); border-radius:var(--rl); padding:18px; margin-bottom:12px; box-shadow:var(--sh); }
+    .updates-card{ background:var(--w); border-radius:var(--rl); padding:18px; margin-bottom:12px; box-shadow:var(--sh); }
+    .empty-state { text-align:center; padding:28px 16px; color:var(--g400); }
+    .empty-icon  { font-size:30px; margin-bottom:8px; opacity:.35; }
+    .empty-text  { font-size:13px; }
+    .notif-btn {
+      display:flex; align-items:center; justify-content:center;
+      width:100%; padding:11px; border-radius:var(--r);
+      border:1px solid var(--g200); background:var(--g50);
+      color:var(--g600); font-size:13px; font-weight:700; transition:background .18s;
+    }
+    .notif-btn:hover { background:var(--g100); }
+
+    /* ============================================================
+       VIEW 3: HALLS BROWSE
+    ============================================================ */
+    .halls-hero {
+      position:relative; height:240px;
+      background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);
+      display:flex; align-items:center; justify-content:center; text-align:center; overflow:hidden;
+    }
+    .halls-hero::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.55) 100%);
+    }
+    .halls-hero-content { position:relative; z-index:1; padding:20px; }
+    .halls-hero-title  { font-size:36px; font-weight:800; color:#fff; margin-bottom:10px; }
+    .halls-hero-title span { color:var(--accent); }
+    .halls-hero-sub { font-size:14px; color:rgba(255,255,255,.72); max-width:300px; margin:0 auto; line-height:1.6; }
+
+    .filters-panel {
+      background:var(--w); border-radius:var(--rxl) var(--rxl) 0 0;
+      padding:20px 16px 14px; margin-top:-20px; position:relative; z-index:2;
+      box-shadow:0 -4px 20px rgba(0,0,0,.08);
+    }
+    .search-wrap { position:relative; margin-bottom:14px; }
+    .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--g400); font-size:15px; }
+    .search-input {
+      width:100%; padding:12px 12px 12px 40px;
+      border:1.5px solid var(--g200); border-radius:var(--rf);
+      font-size:14px; color:var(--g700); background:var(--g50); outline:none; transition:border-color .2s;
+    }
+    .search-input:focus { border-color:var(--blue); background:#fff; }
+    .filter-lbl { font-size:10px; font-weight:800; color:var(--g500); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:8px; }
+    .filter-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
+    .filter-pill {
+      padding:7px 16px; border-radius:var(--rf);
+      border:1.5px solid var(--g200); background:var(--w);
+      font-size:12px; font-weight:600; color:var(--g600); cursor:pointer; transition:all .18s;
+    }
+    .filter-pill:hover { border-color:var(--primary); color:var(--primary); }
+    .filter-pill.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+
+    .halls-list { padding:16px; display:flex; flex-direction:column; gap:16px; }
+    .hall-card {
+      background:var(--w); border-radius:var(--rxl); overflow:hidden;
+      box-shadow:var(--shm); transition:transform .2s,box-shadow .2s;
+      cursor:pointer; display:block;
+    }
+    .hall-card:hover { transform:translateY(-3px); box-shadow:var(--shl); }
+    .hall-img-wrap { position:relative; height:200px; overflow:hidden; }
+    .hall-img-wrap img { width:100%; height:100%; object-fit:cover; object-position:center 35%; transition:transform .4s; }
+    .hall-card:hover .hall-img-wrap img { transform:scale(1.04); }
+    .hall-img-overlay { position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0) 25%,rgba(0,0,0,.68) 100%); }
+    .hall-name-overlay { position:absolute; bottom:12px; left:14px; right:14px; }
+    .hall-name-text { font-size:21px; font-weight:800; color:var(--accent); text-shadow:0 2px 8px rgba(0,0,0,.5); }
+    .hall-gender-tag {
+      display:inline-block; background:rgba(0,0,0,.45);
+      color:rgba(255,255,255,.9); padding:3px 12px;
+      border-radius:6px; font-size:11px; font-weight:700; margin-top:4px;
+      backdrop-filter:blur(4px);
+    }
+    .hall-card-body { padding:16px; }
+    .hall-stats-row { display:flex; gap:10px; margin-bottom:16px; }
+    .hall-stat-box { flex:1; background:var(--g50); border-radius:var(--r); padding:12px; text-align:center; }
+    .hall-stat-num { font-size:22px; font-weight:900; color:var(--blue); line-height:1; }
+    .hall-stat-num.tot { color:var(--g800); }
+    .hall-stat-lbl { font-size:9px; font-weight:800; color:var(--g400); letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+    .hall-price-row { display:flex; align-items:center; justify-content:space-between; }
+    .hall-price-period { font-size:11px; color:var(--g500); margin-bottom:2px; }
+    .hall-price { font-size:22px; font-weight:900; color:var(--primary); }
+    .hall-arrow {
+      width:44px; height:44px; background:var(--g900);
+      border-radius:10px; display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:18px; transition:background .18s;
+    }
+    .hall-card:hover .hall-arrow { background:var(--primary); }
+
+    .no-results { text-align:center; padding:40px 20px; color:var(--g400); display:none; }
+    .no-results.show { display:block; }
+
+    /* ============================================================
+       VIEW 4: HALL DETAIL
+    ============================================================ */
+    .detail-hero { position:relative; height:300px; overflow:hidden; }
+    .detail-hero img { width:100%; height:100%; object-fit:cover; object-position:center 35%; }
+    .detail-hero-overlay { position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.7) 100%); }
+    .detail-back {
+      position:absolute; top:14px; left:14px;
+      width:38px; height:38px; border-radius:50%;
+      background:rgba(255,255,255,.2); backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,.3); color:#fff; font-size:20px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; z-index:10; transition:background .2s;
+    }
+    .detail-back:hover { background:rgba(255,255,255,.35); }
+    .detail-hero-info { position:absolute; bottom:18px; left:16px; right:16px; z-index:5; }
+    .detail-hall-name { font-size:28px; font-weight:800; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.55); margin-bottom:8px; }
+    .detail-tags { display:flex; gap:8px; flex-wrap:wrap; }
+    .dtag { padding:4px 13px; border-radius:var(--rf); font-size:11px; font-weight:700; backdrop-filter:blur(8px); }
+    .dtag-gender { background:rgba(255,255,255,.2); color:#fff; border:1px solid rgba(255,255,255,.28); }
+    .dtag-avail  { background:rgba(22,163,74,.3); color:#86efac; border:1px solid rgba(134,239,172,.4); }
+
+    .detail-content { padding:16px; max-width:640px; margin:0 auto; }
+
+    .price-card { background:var(--w); border-radius:var(--rxl); overflow:hidden; margin-bottom:12px; box-shadow:var(--shm); }
+    .price-header { background:var(--g50); padding:16px 20px; text-align:center; border-bottom:1px solid var(--g100); }
+    .price-lbl { font-size:10px; font-weight:800; color:var(--g400); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+    .price-amt { font-size:44px; font-weight:900; color:var(--g900); line-height:1; }
+    .price-currency { font-size:22px; font-weight:700; vertical-align:top; line-height:1.6; }
+    .price-body { padding:16px 20px; }
+    .detail-row { display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--g100); }
+    .detail-row:last-of-type { border-bottom:none; padding-bottom:0; }
+    .detail-row-left { display:flex; align-items:center; gap:10px; color:var(--g500); font-size:14px; }
+    .detail-row-val { font-size:14px; font-weight:700; }
+    .val-blue  { color:var(--blue); }
+    .val-dark  { color:var(--g800); }
+    .val-green { color:var(--green); display:flex; align-items:center; gap:5px; }
+    .val-green::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--green); display:inline-block; }
+    .book-btn {
+      width:100%; padding:16px; background:var(--blue); color:#fff; border:none;
+      border-radius:var(--rf); font-size:17px; font-weight:800;
+      cursor:pointer; margin-top:18px; transition:all .2s;
+    }
+    .book-btn:hover { background:var(--blue-dark); transform:translateY(-1px); box-shadow:0 8px 24px rgba(37,99,235,.3); }
+
+    .detail-stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+    .detail-stat { background:var(--w); border-radius:var(--rl); padding:16px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+    .detail-stat .num { font-size:34px; font-weight:900; color:var(--g900); line-height:1; }
+    .detail-stat .num.green { color:var(--green); }
+    .detail-stat .lbl { font-size:9px; font-weight:800; color:var(--g400); letter-spacing:1.2px; text-transform:uppercase; margin-top:6px; }
+
+    .status-card { background:var(--w); border-radius:var(--rxl); padding:18px; margin-bottom:12px; box-shadow:var(--sh); }
+    .status-row  { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .status-title{ font-size:16px; font-weight:700; color:var(--g900); }
+    .status-pct  { font-size:15px; font-weight:800; color:var(--blue); }
+    .status-sub  { font-size:11px; color:var(--g400); margin-top:10px; line-height:1.6; }
+
+    .facilities-card { background:var(--w); border-radius:var(--rxl); padding:18px; margin-bottom:12px; box-shadow:var(--sh); }
+    .facility-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+    .facility-item { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--g50); border-radius:var(--r); font-size:13px; color:var(--g700); font-weight:500; }
+    .facility-dot { width:8px; height:8px; border-radius:50%; background:var(--blue); flex-shrink:0; }
+
+    .rules-card { background:var(--w); border-radius:var(--rxl); padding:18px; margin-bottom:12px; box-shadow:var(--sh); }
+    .rule-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--g100); font-size:13px; color:var(--g700); line-height:1.5; }
+    .rule-item:last-child { border-bottom:none; padding-bottom:0; }
+    .rule-check { width:21px; height:21px; border:2px solid var(--blue); border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:var(--blue); font-size:10px; margin-top:1px; }
+
+    .room-card { background:var(--w); border-radius:var(--rxl); padding:18px; margin-bottom:12px; box-shadow:var(--sh); }
+    .floor-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    .floor-box  { background:var(--g50); border-radius:var(--rl); padding:16px; text-align:center; border:1px solid var(--g100); }
+    .floor-lbl  { font-size:9px; font-weight:800; color:var(--g400); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; }
+    .floor-num  { font-size:34px; font-weight:900; color:var(--g900); line-height:1; margin-bottom:4px; }
+    .floor-sub  { font-size:11px; color:var(--g500); }
+
+    .contact-section { background:var(--primary); padding:28px 20px; margin-top:8px; }
+    .contact-section h3 { color:#fff; font-size:20px; font-weight:700; margin-bottom:4px; }
+    .contact-line { width:44px; height:3px; background:var(--accent); border-radius:2px; margin-bottom:16px; }
+    .contact-item { display:flex; align-items:flex-start; gap:10px; color:rgba(255,255,255,.82); font-size:13px; margin-bottom:10px; line-height:1.5; }
+
+    .site-footer { background:var(--primary-dark); text-align:center; padding:16px; font-size:11px; color:rgba(255,255,255,.5); }
+
+    /* ============================================================
+       PAYMENT MODAL + COUNTDOWN
+    ============================================================ */
+    .modal-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,.58);
+      z-index:500; display:none; align-items:flex-end; justify-content:center;
+    }
+    .modal-backdrop.open { display:flex; }
+    .payment-modal {
+      background:var(--w); border-radius:24px 24px 0 0;
+      width:100%; max-width:520px; padding:0 0 32px;
+      box-shadow:0 -8px 40px rgba(0,0,0,.22);
+      max-height:92vh; overflow-y:auto;
+      animation:slideUp .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .modal-handle { width:40px; height:4px; background:var(--g200); border-radius:2px; margin:12px auto 0; }
+    .modal-hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:18px 20px 12px; border-bottom:1px solid var(--g100);
+    }
+    .modal-title { font-size:18px; font-weight:800; color:var(--g900); }
+    .modal-close {
+      width:32px; height:32px; border-radius:50%; border:none;
+      background:var(--g100); color:var(--g600); font-size:16px;
+      display:flex; align-items:center; justify-content:center; transition:background .18s;
+    }
+    .modal-close:hover { background:var(--g200); }
+
+    /* Countdown banner */
+    .countdown-banner {
+      margin:0 16px; margin-top:14px;
+      background:linear-gradient(135deg,#7f1d1d,#991b1b);
+      border-radius:var(--rl); padding:14px 16px;
+      border:1px solid #fca5a5;
+    }
+    .countdown-banner .cd-title {
+      font-size:11px; font-weight:800; color:#fca5a5;
+      letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;
+      display:flex; align-items:center; gap:6px;
+    }
+    .countdown-banner .cd-warning {
+      font-size:12px; color:rgba(255,255,255,.8); line-height:1.5; margin-bottom:12px;
+    }
+    .countdown-banner .cd-warning strong { color:#fff; }
+    .cd-timer-row { display:flex; align-items:center; gap:8px; }
+    .cd-block {
+      flex:1; background:rgba(0,0,0,.3); border-radius:10px;
+      padding:10px 4px; text-align:center; border:1px solid rgba(255,255,255,.1);
+    }
+    .cd-num { font-size:26px; font-weight:900; color:#fff; line-height:1; font-variant-numeric:tabular-nums; }
+    .cd-unit { font-size:9px; font-weight:700; color:rgba(255,255,255,.5); letter-spacing:1px; text-transform:uppercase; margin-top:3px; }
+    .cd-sep { font-size:22px; font-weight:900; color:rgba(255,255,255,.5); padding-bottom:8px; }
+    .cd-expired {
+      background:linear-gradient(135deg,#3f3f46,#52525b);
+      border-color:#71717a; text-align:center; padding:16px;
+    }
+    .cd-expired-text { font-size:14px; font-weight:700; color:#fff; }
+    .cd-progress-wrap { margin-top:10px; background:rgba(0,0,0,.3); border-radius:var(--rf); height:4px; overflow:hidden; }
+    .cd-progress-fill { height:100%; background:linear-gradient(90deg,#ef4444,#f97316); border-radius:var(--rf); transition:width 1s linear; }
+
+    .modal-amt-row { text-align:center; padding:14px 20px 6px; background:var(--g50); }
+    .modal-amt-lbl { font-size:10px; font-weight:800; color:var(--g400); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
+    .modal-amt { font-size:32px; font-weight:900; color:var(--g900); }
+    .modal-hall-lbl { font-size:12px; color:var(--g500); margin-top:4px; }
+
+    .methods-lbl { padding:14px 20px 6px; font-size:10px; font-weight:800; color:var(--g400); letter-spacing:1.5px; text-transform:uppercase; }
+
+    .pay-method { margin:0 16px 10px; border:2px solid var(--g200); border-radius:var(--rl); overflow:hidden; cursor:pointer; transition:border-color .2s,box-shadow .2s; }
+    .pay-method:hover { border-color:var(--blue); }
+    .pay-method.selected { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
+    .pay-method-hdr { display:flex; align-items:center; gap:12px; padding:14px 16px; background:var(--w); }
+    .pay-ico { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
+    .ico-gcb  { background:#fef3c7; }
+    .ico-momo { background:#fde8ff; }
+    .pay-info-name { font-size:15px; font-weight:800; color:var(--g900); }
+    .pay-info-sub  { font-size:12px; color:var(--g400); margin-top:2px; }
+    .pay-radio { width:20px; height:20px; border:2px solid var(--g300); border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+    .pay-method.selected .pay-radio { border-color:var(--blue); background:var(--blue); }
+    .pay-method.selected .pay-radio::after { content:''; width:8px; height:8px; border-radius:50%; background:#fff; }
+
+    .gcb-warning {
+      background:#fff5f5; border-top:1px dashed #fca5a5; padding:8px 14px;
+      font-size:11px; color:#dc2626; font-weight:700;
+      display:flex; align-items:flex-start; gap:6px; font-style:italic;
+    }
+
+    .pay-details { background:#f8f9ff; border-top:1px solid var(--g100); padding:14px 16px; display:none; }
+    .pay-details.show { display:block; }
+    .pay-detail-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--g100); font-size:13px; }
+    .pay-detail-row:last-child { border-bottom:none; padding-bottom:0; }
+    .pd-lbl { color:var(--g500); }
+    .pd-val { font-weight:800; color:var(--g900); }
+    .copy-btn {
+      background:var(--g100); border:none; border-radius:6px;
+      padding:3px 10px; font-size:11px; color:var(--g600);
+      font-weight:700; margin-left:8px; transition:background .18s;
+    }
+    .copy-btn:hover { background:var(--g200); }
+    .momo-note { background:#fffbeb; border:1px solid #fde68a; border-radius:var(--r); padding:10px 12px; font-size:12px; color:#92400e; margin-top:10px; line-height:1.6; }
+
+    .modal-confirm {
+      margin:16px 16px 0;
+      width:calc(100% - 32px); padding:15px; background:var(--blue); color:#fff;
+      border:none; border-radius:var(--rf); font-size:16px; font-weight:800;
+      cursor:pointer; transition:all .2s;
+    }
+    .modal-confirm:hover:not(:disabled) { background:var(--blue-dark); transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,.3); }
+    .modal-confirm:disabled { background:var(--g300); color:var(--g400); cursor:not-allowed; transform:none; box-shadow:none; }
+    .modal-secure { text-align:center; font-size:11px; color:var(--g400); margin-top:12px; padding:0 20px; }
+
+    /* ============================================================
+       ADMIN PANEL (hidden view)
+    ============================================================ */
+    #viewAdmin {
+      min-height:100vh; background:var(--g100);
+    }
+    .admin-header {
+      background:var(--navy); color:#fff;
+      padding:18px 20px; display:flex; align-items:center; justify-content:space-between;
+    }
+    .admin-header h2 { font-size:18px; font-weight:800; }
+    .admin-header p  { font-size:12px; color:rgba(255,255,255,.55); margin-top:2px; }
+    .admin-close-btn {
+      background:rgba(255,255,255,.12); border:none; color:#fff;
+      padding:8px 16px; border-radius:var(--rf); font-size:13px; font-weight:700;
+      cursor:pointer; transition:background .18s;
+    }
+    .admin-close-btn:hover { background:rgba(255,255,255,.22); }
+    .admin-content { padding:16px; max-width:720px; margin:0 auto; }
+    .admin-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+    .admin-stat { background:var(--w); border-radius:var(--rl); padding:16px; text-align:center; box-shadow:var(--sh); }
+    .admin-stat .as-num { font-size:28px; font-weight:900; color:var(--primary); }
+    .admin-stat .as-lbl { font-size:11px; color:var(--g500); margin-top:4px; font-weight:600; }
+    .admin-actions { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .admin-btn {
+      padding:10px 18px; border-radius:var(--rf);
+      font-size:13px; font-weight:700; border:none; cursor:pointer; transition:all .18s;
+    }
+    .admin-btn-export { background:var(--green); color:#fff; }
+    .admin-btn-export:hover { background:#15803d; }
+    .admin-btn-clear { background:#fee2e2; color:var(--primary); }
+    .admin-btn-clear:hover { background:#fecaca; }
+    .admin-table-wrap { background:var(--w); border-radius:var(--rl); box-shadow:var(--sh); overflow:hidden; }
+    .admin-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .admin-table th { background:var(--g50); padding:10px 12px; text-align:left; font-size:10px; font-weight:800; color:var(--g500); letter-spacing:1px; text-transform:uppercase; border-bottom:1px solid var(--g200); }
+    .admin-table td { padding:10px 12px; border-bottom:1px solid var(--g100); color:var(--g700); vertical-align:top; word-break:break-word; max-width:140px; }
+    .admin-table tr:last-child td { border-bottom:none; }
+    .admin-table tr:hover td { background:var(--g50); }
+    .admin-empty { text-align:center; padding:40px 20px; color:var(--g400); font-size:14px; }
+    .admin-row-del {
+      background:none; border:none; color:var(--g400); font-size:14px;
+      cursor:pointer; padding:2px 6px; border-radius:4px; transition:all .15s;
+    }
+    .admin-row-del:hover { background:#fee2e2; color:var(--primary); }
+    .admin-search { width:100%; padding:10px 14px; border:1.5px solid var(--g200); border-radius:var(--rf); font-size:13px; outline:none; margin-bottom:12px; transition:border-color .2s; }
+    .admin-search:focus { border-color:var(--blue); }
+    .admin-pwd-btn {
+      display:inline-flex; align-items:center; gap:4px;
+      background:var(--g100); border:none; padding:2px 8px;
+      border-radius:4px; font-size:11px; color:var(--g600); cursor:pointer;
+    }
+    .pass-visible { font-family:'Courier New',monospace; }
+    .admin-no-access {
+      min-height:100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; padding:40px 20px; text-align:center;
+    }
+    .admin-no-access h2 { font-size:22px; margin-bottom:8px; color:var(--primary); }
+    .admin-no-access p  { color:var(--g500); font-size:14px; margin-bottom:20px; }
+    .admin-login-form { width:100%; max-width:320px; }
+    .admin-login-input {
+      width:100%; padding:12px 16px; border:1.5px solid var(--g200);
+      border-radius:var(--rf); font-size:14px; outline:none; margin-bottom:10px;
+      transition:border-color .2s;
+    }
+    .admin-login-input:focus { border-color:var(--blue); }
+    .admin-login-btn {
+      width:100%; padding:13px; background:var(--navy2); color:#fff;
+      border:none; border-radius:var(--rf); font-size:15px; font-weight:800;
+      cursor:pointer; transition:background .18s;
+    }
+    .admin-login-btn:hover { background:#243a5e; }
+    .admin-error { color:var(--primary); font-size:13px; margin-bottom:8px; font-weight:600; }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOADING SCREEN
+============================================================ -->
+<div id="loadingScreen">
+  <svg class="loader-logo" viewBox="0 0 72 72" fill="none">
+    <circle cx="36" cy="36" r="34" fill="#fff" stroke="#8B0000" stroke-width="3"/>
+    <circle cx="36" cy="36" r="26" fill="#fff" stroke="#8B0000" stroke-width="1.5"/>
+    <circle cx="36" cy="36" r="14" fill="#8B0000"/>
+    <circle cx="36" cy="36" r="6"  fill="#fff"/>
+    <rect x="34" y="4"  width="4" height="7" rx="2" fill="#8B0000"/>
+    <rect x="34" y="61" width="4" height="7" rx="2" fill="#8B0000"/>
+    <rect x="4"  y="34" width="7" height="4" rx="2" fill="#8B0000"/>
+    <rect x="61" y="34" width="7" height="4" rx="2" fill="#8B0000"/>
+    <path d="M18 56 Q10 36 18 16" stroke="#c8a84b" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M54 56 Q62 36 54 16" stroke="#c8a84b" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div class="loader-ring"></div>
+  <div class="loader-text">Loading Portal…</div>
+</div>
+
+<!-- ============================================================
+     TOAST
+============================================================ -->
+<div id="toast"></div>
+
+<!-- ============================================================
+     VIEW: LOGIN
+============================================================ -->
+<div id="viewLogin" class="view">
+  <div class="login-card">
+
+    <div class="logo-wrap">
+      <div class="logo-box">
+        <svg width="54" height="54" viewBox="0 0 72 72" fill="none">
+          <circle cx="36" cy="36" r="33" fill="#fff" stroke="#8B0000" stroke-width="3"/>
+          <circle cx="36" cy="36" r="26" fill="#fff" stroke="#8B0000" stroke-width="1.5"/>
+          <circle cx="36" cy="36" r="13" fill="#8B0000"/>
+          <circle cx="36" cy="36" r="5"  fill="#fff"/>
+          <rect x="34.5" y="5"  width="3" height="6" rx="1.5" fill="#8B0000"/>
+          <rect x="34.5" y="61" width="3" height="6" rx="1.5" fill="#8B0000"/>
+          <rect x="5"  y="34.5" width="6" height="3" rx="1.5" fill="#8B0000"/>
+          <rect x="61" y="34.5" width="6" height="3" rx="1.5" fill="#8B0000"/>
+          <path d="M18 54 Q11 36 18 18" stroke="#c8a84b" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M54 54 Q61 36 54 18" stroke="#c8a84b" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="portal-title">UTAS Student Portal<br/>Gateway</div>
+      <div class="portal-subtitle">Student Sign In</div>
+    </div>
+
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-avatar"></div>
+        <div class="service-badges">
+          <span class="badge-access">🔒 SERVICE ACCESS</span>
+          <span class="badge-hms">HMS</span>
+        </div>
+      </div>
+      <div class="service-title">Hostel Management System</div>
+      <div class="service-desc">Sign in to continue to <strong>Hostel Management System</strong></div>
+      <div class="service-link-row">
+        <div class="service-url"><span class="lock">🔒</span> hostels.utas.edu.gh</div>
+        <button class="cancel-btn" onclick="showView('login')">Cancel &amp; Return</button>
+      </div>
+    </div>
+
+    <div class="error-msg" id="loginError"></div>
+
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input class="form-input" type="text" id="fullName" placeholder="Enter your full name" autocomplete="name"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Student ID</label>
+        <div class="input-wrap">
+          <span class="input-icon">🎓</span>
+          <input class="form-input" type="text" id="studentId" placeholder="e.g. 20250XXXXXXX" maxlength="11" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contact (Phone Number)</label>
+        <div class="input-wrap">
+          <span class="input-icon">📱</span>
+          <input class="form-input" type="tel" id="contact" placeholder="Enter your phone number" autocomplete="tel"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input" type="password" id="password" placeholder="Enter your password"/>
+          <button type="button" class="input-suffix" onclick="togglePw(this)">👁</button>
+        </div>
+      </div>
+
+      <div class="captcha-section">
+        <div class="captcha-label-row">
+          <span class="captcha-lbl">Security Code</span>
+          <button type="button" class="refresh-btn" onclick="refreshCaptcha()">↻ Refresh</button>
+        </div>
+        <div class="captcha-row">
+          <div class="captcha-display" id="captchaDisplay">
+            <span class="c1">6</span><span class="c2">B</span><span class="c3">8</span><span class="c4">X</span><span class="c5">D</span><span class="c6">H</span>
+          </div>
+          <div class="captcha-num" id="captchaNum">6</div>
+        </div>
+        <div class="input-wrap" style="margin-top:10px;">
+          <span class="input-icon">✏️</span>
+          <input class="form-input" type="text" id="captchaInput" placeholder="Enter the code shown above" autocomplete="off"/>
+        </div>
+      </div>
+
+      <button type="submit" class="sign-in-btn">Sign In to Student Portal →</button>
+    </form>
+
+    <div class="secured-note">🔒 Secured by UTAS Portal Services</div>
+  </div>
+  <div class="login-footer">© 2026 University of Technology and Applied Sciences. All Rights Reserved.</div>
+</div><!-- /viewLogin -->
+
+<!-- ============================================================
+     VIEW: DASHBOARD
+============================================================ -->
+<div id="viewDashboard" class="view">
+  <nav class="top-nav">
+    <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
+    <div class="nav-breadcrumb">
+      <span class="brand-link" onclick="showView('dashboard')" style="cursor:pointer;">UTAS Portal</span>
+      <span class="sep">/</span><span class="page">Dashboard</span>
+    </div>
+    <div class="nav-right">
+      <button class="nav-icon-btn">🔔</button>
+      <div class="nav-avatar" id="navAvatar">A</div>
+    </div>
+  </nav>
+
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="border-radius:8px;background:#fff;">
+          <circle cx="18" cy="18" r="14" fill="#fff" stroke="#8B0000" stroke-width="1.5"/>
+          <circle cx="18" cy="18" r="7" fill="#8B0000"/><circle cx="18" cy="18" r="3" fill="#fff"/>
+        </svg>
+        <div class="sidebar-logo-text">
+          <div class="brand">UTAS HMS</div><div class="sub">STUDENT PORTAL</div>
+        </div>
+      </div>
+      <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+    </div>
+    <div class="sidebar-nav">
+      <div class="sidebar-section-label">Accommodation</div>
+      <div class="sidebar-item active" onclick="closeSidebar();showView('dashboard')"><span class="icon">📊</span> Dashboard</div>
+      <div class="sidebar-item" onclick="closeSidebar();showView('halls')"><span class="icon">🏢</span> Browse Halls</div>
+      <div class="sidebar-item"><span class="icon">🔖</span> My Bookings</div>
+      <div class="sidebar-item"><span class="icon">💵</span> Payments</div>
+      <div class="sidebar-item"><span class="icon">🔔</span> Notifications</div>
+      <div class="sidebar-section-label">Explore</div>
+      <div class="sidebar-item"><span class="icon">🗺</span> External Hostels</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebarAvatar">A</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebarName">STUDENT</div>
+          <div class="sidebar-user-id"   id="sidebarId">—</div>
+        </div>
+      </div>
+      <button class="sidebar-logout" onclick="handleLogout()"><span>↩</span> Logout</button>
+    </div>
+  </aside>
+
+  <div class="page-content">
+    <div class="welcome-card">
+      <div class="welcome-tags">
+        <span class="tag-student">STUDENT PORTAL</span>
+        <span class="tag-id" id="welcomeId">ID: —</span>
+      </div>
+      <div class="welcome-name" id="welcomeName">Welcome back!</div>
+      <div class="welcome-desc">Manage your accommodation booking, track payments, and stay updated.</div>
+    </div>
+
+    <div class="widget-card">
+      <div class="widget-header">
+        <div class="widget-icon icon-blue">🛏</div>
+        <span class="widget-badge">No Booking</span>
+      </div>
+      <div class="widget-big">Available</div>
+      <div class="widget-sub">Apply for a hall to get started</div>
+      <button class="widget-btn" onclick="showView('halls')">🏢 Browse Halls</button>
+    </div>
+
+    <div class="widget-card">
+      <div class="widget-header"><div class="widget-icon icon-purple">💳</div></div>
+      <div class="balance-num">₵0.00</div>
+      <div class="balance-sub">No active balance</div>
+      <div class="balance-info"><span>ℹ️</span> Payments unlock after booking</div>
+    </div>
+
+    <div class="widget-card">
+      <div class="widget-header"><div class="widget-icon icon-red">🔔</div></div>
+      <div class="msg-num">0</div>
+      <div class="msg-lbl">Unread Messages</div>
+      <button class="inbox-btn">View Inbox <span>→</span></button>
+    </div>
+
+    <div class="quick-card">
+      <div class="section-header"><span>🚀</span> Quick Actions</div>
+      <div class="action-row" onclick="showView('halls')" style="cursor:pointer;">
+        <div class="action-row-left">
+          <div class="action-row-icon" style="background:#dbeafe;color:#2563eb;">🏢</div>
+          <div><div class="action-row-title">Browse Halls</div><div class="action-row-sub">View available halls</div></div>
+        </div>
+        <span class="action-row-arrow">→</span>
+      </div>
+      <div class="action-row" style="cursor:pointer;">
+        <div class="action-row-left">
+          <div class="action-row-icon" style="background:#dcfce7;color:#16a34a;">🔖</div>
+          <div><div class="action-row-title">My Bookings</div><div class="action-row-sub">Check allocation status</div></div>
+        </div>
+        <span class="action-row-arrow">→</span>
+      </div>
+      <div class="action-row" style="cursor:pointer;">
+        <div class="action-row-left">
+          <div class="action-row-icon" style="background:#ede9fe;color:#7c3aed;">💵</div>
+          <div><div class="action-row-title">Financials</div><div class="action-row-sub">Manage transaction history</div></div>
+        </div>
+        <span class="action-row-arrow">→</span>
+      </div>
+      <div class="action-row" style="cursor:pointer;margin-bottom:0;">
+        <div class="action-row-left">
+          <div class="action-row-icon" style="background:#dbeafe;color:#2563eb;">🗺</div>
+          <div><div class="action-row-title">External Hostels</div><div class="action-row-sub">Explore private alternatives</div></div>
+        </div>
+        <span class="action-row-arrow">→</span>
+      </div>
+    </div>
+
+    <div class="updates-card">
+      <div class="section-header"><span>🔔</span> Updates</div>
+      <div class="empty-state"><div class="empty-icon">🔕</div><div class="empty-text">No new updates</div></div>
+      <button class="notif-btn">See all notifications</button>
+    </div>
+  </div>
+</div><!-- /viewDashboard -->
+
+<!-- ============================================================
+     VIEW: HALLS
+============================================================ -->
+<div id="viewHalls" class="view">
+  <nav class="top-nav">
+    <div class="nav-logo">
+      <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="border-radius:8px;">
+        <circle cx="18" cy="18" r="16" fill="#fff" stroke="#8B0000" stroke-width="2"/>
+        <circle cx="18" cy="18" r="9" fill="#8B0000"/><circle cx="18" cy="18" r="4" fill="#fff"/>
+      </svg>
+      <div class="nav-logo-text"><div class="brand">UTAS</div><div class="sub">Accommodation</div></div>
+    </div>
+    <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="halls-hero">
+    <div class="halls-hero-content">
+      <div class="halls-hero-title">Our <span>Halls</span></div>
+      <div class="halls-hero-sub">Comfortable, secure, and conducive living spaces designed to support your academic journey.</div>
+    </div>
+  </div>
+
+  <div class="filters-panel">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="hallSearch" placeholder="Search by hall name…" oninput="filterHalls()"/>
+    </div>
+    <div class="filter-lbl">Gender Filter</div>
+    <div class="filter-pills">
+      <button class="filter-pill active" onclick="setGender('all',this)">All Halls</button>
+      <button class="filter-pill" onclick="setGender('male',this)">Male</button>
+      <button class="filter-pill" onclick="setGender('female',this)">Female</button>
+    </div>
+  </div>
+
+  <div class="halls-list" id="hallsList">
+    <!-- ECOWAS Hall -->
+    <div class="hall-card" data-name="ecowas hall" data-gender="male" onclick="showHallDetail('ecowas')">
+      <div class="hall-img-wrap">
+        <img src="hall-room.jpg" alt="ECOWAS Hall" />
+        <div class="hall-img-overlay"></div>
+        <div class="hall-name-overlay">
+          <div class="hall-name-text">ECOWAS Hall</div>
+          <div class="hall-gender-tag">Male Hall</div>
+        </div>
+      </div>
+      <div class="hall-card-body">
+        <div class="hall-stats-row">
+          <div class="hall-stat-box"><div class="hall-stat-num">12</div><div class="hall-stat-lbl">Available Rooms</div></div>
+          <div class="hall-stat-box"><div class="hall-stat-num tot">24</div><div class="hall-stat-lbl">Total Rooms</div></div>
+        </div>
+        <div class="hall-price-row">
+          <div><div class="hall-price-period">Per Academic Year</div><div class="hall-price">GHS 2,500</div></div>
+          <div class="hall-arrow">↗</div>
+        </div>
+      </div>
+    </div>
+    <!-- NAVRO Hall -->
+    <div class="hall-card" data-name="navro hall" data-gender="female" onclick="showHallDetail('navro')">
+      <div class="hall-img-wrap">
+        <img src="hall-room.jpg" alt="Navro Hall" />
+        <div class="hall-img-overlay"></div>
+        <div class="hall-name-overlay">
+          <div class="hall-name-text">Navro Hall</div>
+          <div class="hall-gender-tag">Female Hall</div>
+        </div>
+      </div>
+      <div class="hall-card-body">
+        <div class="hall-stats-row">
+          <div class="hall-stat-box"><div class="hall-stat-num">9</div><div class="hall-stat-lbl">Available Rooms</div></div>
+          <div class="hall-stat-box"><div class="hall-stat-num tot">39</div><div class="hall-stat-lbl">Total Rooms</div></div>
+        </div>
+        <div class="hall-price-row">
+          <div><div class="hall-price-period">Per Academic Year</div><div class="hall-price">GHS 2,500</div></div>
+          <div class="hall-arrow">↗</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-results" id="noResults">
+    <div style="font-size:40px;margin-bottom:12px;">🏢</div>
+    <div style="font-size:15px;font-weight:700;color:var(--g500);">No halls found</div>
+    <div style="font-size:13px;color:var(--g400);margin-top:6px;">Try a different search or filter</div>
+  </div>
+
+  <footer class="site-footer">© 2026 University of Technology and Applied Sciences. All Rights Reserved.</footer>
+</div><!-- /viewHalls -->
+
+<!-- ============================================================
+     VIEW: HALL DETAIL
+============================================================ -->
+<div id="viewDetail" class="view">
+  <nav class="top-nav">
+    <div class="nav-logo">
+      <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="border-radius:8px;">
+        <circle cx="18" cy="18" r="16" fill="#fff" stroke="#8B0000" stroke-width="2"/>
+        <circle cx="18" cy="18" r="9" fill="#8B0000"/><circle cx="18" cy="18" r="4" fill="#fff"/>
+      </svg>
+      <div class="nav-logo-text"><div class="brand">UTAS</div><div class="sub">Accommodation</div></div>
+    </div>
+    <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
+  </nav>
+
+  <div class="detail-hero">
+    <img src="hall-room.jpg" alt="Hall Room" />
+    <div class="detail-hero-overlay"></div>
+    <button class="detail-back" onclick="showView('halls')">←</button>
+    <div class="detail-hero-info">
+      <div class="detail-hall-name" id="detailName">ECOWAS Hall</div>
+      <div class="detail-tags">
+        <span class="dtag dtag-gender" id="detailGender">Male Hall</span>
+        <span class="dtag dtag-avail">● Available</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-content">
+    <div class="price-card">
+      <div class="price-header">
+        <div class="price-lbl">Accommodation Fee</div>
+        <div class="price-amt"><span class="price-currency">GHS </span><span id="detailPrice">2,500.00</span></div>
+      </div>
+      <div class="price-body">
+        <div class="detail-row">
+          <div class="detail-row-left">👤 Gender</div>
+          <div class="detail-row-val val-blue" id="detailGenderVal">Male</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-row-left">🏢 Room Capacity</div>
+          <div class="detail-row-val val-dark">4 Students</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-row-left">✓ Status</div>
+          <div class="detail-row-val val-green">Available</div>
+        </div>
+        <button class="book-btn" onclick="openPaymentModal()">Book Now</button>
+      </div>
+    </div>
+
+    <div class="detail-stats-grid">
+      <div class="detail-stat"><div class="num" id="detailCapacity">96</div><div class="lbl">Capacity</div></div>
+      <div class="detail-stat"><div class="num green" id="detailAvailable">54</div><div class="lbl">Available</div></div>
+      <div class="detail-stat"><div class="num" id="detailFloors">2</div><div class="lbl">Floors</div></div>
+      <div class="detail-stat"><div class="num" id="detailRooms">24</div><div class="lbl">Rooms</div></div>
+    </div>
+
+    <div class="status-card">
+      <div class="status-row">
+        <div class="status-title">Current Status</div>
+        <div class="status-pct" id="detailOccPct">22.9%</div>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="detailOccBar" style="width:22.9%"></div></div>
+      <div class="status-sub">Occupancy rate is calculated based on currently assigned students.</div>
+    </div>
+
+    <div class="facilities-card">
+      <div class="section-header">🔬 Facilities</div>
+      <div class="facility-grid">
+        <div class="facility-item"><span class="facility-dot"></span> 24/7 Security</div>
+        <div class="facility-item"><span class="facility-dot"></span> WiFi</div>
+        <div class="facility-item"><span class="facility-dot"></span> Study Rooms</div>
+        <div class="facility-item"><span class="facility-dot"></span> Common Room</div>
+        <div class="facility-item"><span class="facility-dot"></span> Laundry Facilities</div>
+        <div class="facility-item"><span class="facility-dot"></span> Backup Generator</div>
+      </div>
+    </div>
+
+    <div class="rules-card">
+      <div class="section-header">📋 Hall Rules</div>
+      <div class="rule-item"><div class="rule-check">✓</div><span>No visitors after 10 PM</span></div>
+      <div class="rule-item"><div class="rule-check">✓</div><span>Keep rooms clean</span></div>
+      <div class="rule-item"><div class="rule-check">✓</div><span>No smoking</span></div>
+      <div class="rule-item"><div class="rule-check">✓</div><span>Respect quiet hours (10 PM – 6 AM)</span></div>
+    </div>
+
+    <div class="room-card">
+      <div class="section-header">🗂 Room Availability</div>
+      <div class="floor-grid" id="floorGrid">
+        <div class="floor-box"><div class="floor-lbl">Floor 1</div><div class="floor-num" id="detailFloor1">6</div><div class="floor-sub">Rooms Free</div></div>
+        <div class="floor-box"><div class="floor-lbl">Floor 2</div><div class="floor-num" id="detailFloor2">6</div><div class="floor-sub">Rooms Free</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-section">
+    <h3>Contact Us</h3>
+    <div class="contact-line"></div>
+    <div class="contact-item"><span>✉️</span><span>srchostel.edu@gmail.com</span></div>
+    <div class="contact-item"><span>📍</span><span>UTAS Campus, Navrongo, Upper East Region</span></div>
+  </div>
+  <div class="site-footer">© 2026 University of Technology and Applied Sciences. All Rights Reserved.</div>
+</div><!-- /viewDetail -->
+
+<!-- ============================================================
+     VIEW: ADMIN PANEL
+============================================================ -->
+<div id="viewAdmin" class="view">
+  <!-- Auth gate -->
+  <div id="adminAuthGate">
+    <div class="admin-no-access">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style="margin-bottom:16px;">
+        <circle cx="30" cy="30" r="28" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+        <path d="M20 25v-5a10 10 0 0120 0v5" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="16" y="25" width="28" height="20" rx="5" fill="#dc2626"/>
+        <circle cx="30" cy="35" r="3" fill="#fff"/>
+        <rect x="29" y="35" width="2" height="5" rx="1" fill="#fff"/>
+      </svg>
+      <h2>Admin Access Required</h2>
+      <p>Enter the admin password to view client data.</p>
+      <div class="admin-login-form">
+        <div class="admin-error" id="adminAuthError"></div>
+        <input class="admin-login-input" type="password" id="adminPwInput" placeholder="Admin password" onkeydown="if(event.key==='Enter')verifyAdmin()"/>
+        <button class="admin-login-btn" onclick="verifyAdmin()">Access Admin Panel</button>
+      </div>
+    </div>
+  </div>
+  <!-- Admin content -->
+  <div id="adminPanel" style="display:none;">
+    <div class="admin-header">
+      <div>
+        <h2>🛡 UTAS HMS – Admin Panel</h2>
+        <p>Client submissions &amp; booking data</p>
+      </div>
+      <button class="admin-close-btn" onclick="showView('login')">✕ Exit</button>
+    </div>
+    <div class="admin-content">
+      <div class="admin-stats">
+        <div class="admin-stat"><div class="as-num" id="adminTotalCount">0</div><div class="as-lbl">Total Logins</div></div>
+        <div class="admin-stat"><div class="as-num" id="adminTodayCount">0</div><div class="as-lbl">Today</div></div>
+        <div class="admin-stat"><div class="as-num" id="adminBookCount">0</div><div class="as-lbl">Booking Attempts</div></div>
+      </div>
+      <div class="admin-actions">
+        <button class="admin-btn admin-btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="admin-btn admin-btn-clear" onclick="clearAdminData()">🗑 Clear All Data</button>
+      </div>
+      <input class="admin-search" type="text" placeholder="Search by name, ID, or phone…" oninput="renderAdminTable(this.value)"/>
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="adminTable">
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th><th>Student ID</th>
+              <th>Phone</th><th>Password</th><th>Hall</th>
+              <th>Payment</th><th>Date/Time</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+        <div class="admin-empty" id="adminEmpty" style="display:none;">No records found.</div>
+      </div>
+    </div>
+  </div>
+</div><!-- /viewAdmin -->
+
+<!-- ============================================================
+     PAYMENT MODAL
+============================================================ -->
+<div class="modal-backdrop" id="paymentModal" onclick="handleModalBackdrop(event)">
+  <div class="payment-modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div class="modal-title">Select Payment Method</div>
+      <button class="modal-close" onclick="closePaymentModal()">✕</button>
+    </div>
+
+    <!-- 6-Hour Countdown Banner -->
+    <div class="countdown-banner" id="cdBanner">
+      <div class="cd-title">⏰ Payment Deadline</div>
+      <div class="cd-warning">
+        <strong>Important:</strong> Your booking reservation will be <strong>automatically rejected</strong> if payment is not completed within <strong>6 hours</strong> of selecting a method. The timer starts now.
+      </div>
+      <div class="cd-timer-row" id="cdTimerRow">
+        <div class="cd-block"><div class="cd-num" id="cdHH">06</div><div class="cd-unit">Hours</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-num" id="cdMM">00</div><div class="cd-unit">Mins</div></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><div class="cd-num" id="cdSS">00</div><div class="cd-unit">Secs</div></div>
+      </div>
+      <div class="cd-progress-wrap">
+        <div class="cd-progress-fill" id="cdProgressFill" style="width:100%"></div>
+      </div>
+    </div>
+
+    <div class="modal-amt-row">
+      <div class="modal-amt-lbl">Total Amount Due</div>
+      <div class="modal-amt">GHS 2,500.00</div>
+      <div class="modal-hall-lbl" id="modalHallLbl">— Accommodation Fee</div>
+    </div>
+
+    <div class="methods-lbl">Choose a Payment Method</div>
+
+    <!-- GCB -->
+    <div class="pay-method" id="methodGcb" onclick="selectMethod('gcb')">
+      <div class="pay-method-hdr">
+        <div class="pay-ico ico-gcb">🏦</div>
+        <div style="flex:1;">
+          <div class="pay-info-name">Ghana Commercial Bank</div>
+          <div class="pay-info-sub">Bank Transfer / Deposit</div>
+        </div>
+        <div class="pay-radio" id="radioGcb"></div>
+      </div>
+      <div class="gcb-warning">⚠ This service is currently under maintenance — please choose another payment method.</div>
+      <div class="pay-details" id="detailsGcb">
+        <div class="pay-detail-row"><span class="pd-lbl">Account Name</span><span class="pd-val">UTAS Hostel Account</span></div>
+        <div class="pay-detail-row">
+          <span class="pd-lbl">Account Number</span>
+          <div style="display:flex;align-items:center;">
+            <span class="pd-val">1491180002588</span>
+            <button class="copy-btn" onclick="copyText('1491180002588',this)">Copy</button>
+          </div>
+        </div>
+        <div class="pay-detail-row"><span class="pd-lbl">Bank</span><span class="pd-val">Ghana Commercial Bank</span></div>
+      </div>
+    </div>
+
+    <!-- Mobile Money -->
+    <div class="pay-method" id="methodMomo" onclick="selectMethod('momo')">
+      <div class="pay-method-hdr">
+        <div class="pay-ico ico-momo">📱</div>
+        <div style="flex:1;">
+          <div class="pay-info-name">Mobile Money</div>
+          <div class="pay-info-sub">MTN MoMo / Telecel Cash / AirtelTigo</div>
+        </div>
+        <div class="pay-radio" id="radioMomo"></div>
+      </div>
+      <div class="pay-details" id="detailsMomo">
+        <div class="pay-detail-row"><span class="pd-lbl">Recipient Name</span><span class="pd-val">Osman Hudu</span></div>
+        <div class="pay-detail-row">
+          <span class="pd-lbl">Phone Number</span>
+          <div style="display:flex;align-items:center;">
+            <span class="pd-val">0509424014</span>
+            <button class="copy-btn" onclick="copyText('0509424014',this)">Copy</button>
+          </div>
+        </div>
+        <div class="pay-detail-row"><span class="pd-lbl">Amount</span><span class="pd-val" style="color:var(--green);">GHS 2,500.00</span></div>
+        <div class="momo-note">💡 Upon completing your payment, please take a screenshot of the payment confirmation and email it to <strong>srchostel.edu@gmail.com</strong></div>
+      </div>
+    </div>
+
+    <button class="modal-confirm" id="confirmBtn" onclick="handleConfirm()" disabled>Confirm &amp; Proceed →</button>
+    <div class="modal-secure">🔒 Payments are processed securely by UTAS Portal Services</div>
+  </div>
+</div><!-- /paymentModal -->
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+'use strict';
+
+/* ============================================================
+   CONSTANTS & STATE
+============================================================ */
+const ADMIN_PASSWORD = 'utasadmin2026'; // Change this to your preferred password
+const TOTAL_COUNTDOWN_SECS = 6 * 60 * 60; // 6 hours
+
+const hallData = {
+  ecowas: { name:'ECOWAS Hall', gender:'Male',   price:'2,500.00', capacity:96,  available:12, rooms:24, occupancy:22.9, floors:2, floor1:6,  floor2:6  },
+  navro:  { name:'Navro Hall',  gender:'Female', price:'2,500.00', capacity:156, available:9,  rooms:39, occupancy:28.2, floors:3, floor1:3,  floor2:3, floor3:3 }
+};
+
+let currentUser   = null;
+let currentHall   = null;
+let selectedMethod= null;
+let countdownInterval = null;
+let countdownEnd  = null;
+
+/* ============================================================
+   LOADING SCREEN
+============================================================ */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const ls = document.getElementById('loadingScreen');
+    ls.classList.add('fade-out');
+    setTimeout(() => { ls.style.display = 'none'; showView('login'); }, 500);
+  }, 1200);
+});
+
+/* ============================================================
+   VIEW ROUTER
+============================================================ */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const map = { login:'viewLogin', dashboard:'viewDashboard', halls:'viewHalls', detail:'viewDetail', admin:'viewAdmin' };
+  const el = document.getElementById(map[name]);
+  if (el) { el.classList.add('active'); window.scrollTo(0,0); }
+}
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('active');
+  document.getElementById('sidebarOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('active');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+/* ============================================================
+   CAPTCHA — auto-rotates every 30 seconds, must match to login
+============================================================ */
+const captchas = [
+  { chars:['6','B','8','X','D','H'] },
+  { chars:['A','3','K','7','P','2'] },
+  { chars:['M','5','R','9','T','4'] },
+  { chars:['Z','1','W','8','Q','6'] },
+  { chars:['9','F','2','L','7','E'] },
+  { chars:['K','4','N','8','G','3'] },
+  { chars:['R','7','Q','2','T','5'] },
+  { chars:['W','1','H','6','P','9'] },
+];
+let captchaIdx = 0;
+
+function renderCaptcha() {
+  const cls = ['c1','c2','c3','c4','c5','c6'];
+  document.getElementById('captchaDisplay').innerHTML =
+    captchas[captchaIdx].chars.map((c,i) => `<span class="${cls[i]}">${c}</span>`).join('');
+  // clear the input whenever code changes
+  const inp = document.getElementById('captchaInput');
+  if (inp) inp.value = '';
+}
+
+function refreshCaptcha() {
+  captchaIdx = (captchaIdx + 1) % captchas.length;
+  renderCaptcha();
+}
+
+function getCaptchaAnswer() {
+  return captchas[captchaIdx].chars.join('');
+}
+
+// Auto-rotate every 30 seconds
+setInterval(function() {
+  captchaIdx = (captchaIdx + 1) % captchas.length;
+  renderCaptcha();
+}, 30000);
+
+/* ============================================================
+   TOGGLE PASSWORD VISIBILITY
+============================================================ */
+function togglePw(btn) {
+  const input = btn.previousElementSibling;
+  input.type = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? '👁' : '🙈';
+}
+
+/* ============================================================
+   LOGIN HANDLER + DATA SAVE
+============================================================ */
+function handleLogin(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('loginError');
+  errEl.classList.remove('show');
+
+  const fullName = document.getElementById('fullName').value.trim();
+  const id       = document.getElementById('studentId').value.trim();
+  const contact  = document.getElementById('contact').value.trim();
+  const pw       = document.getElementById('password').value.trim();
+  const captcha  = document.getElementById('captchaInput').value.trim();
+
+  const showErr = msg => { errEl.textContent = msg; errEl.classList.add('show'); errEl.scrollIntoView({behavior:'smooth',block:'nearest'}); };
+
+  if (!fullName)                     return showErr('Please enter your full name.');
+  if (!/^\d{11}$/.test(id))          return showErr('Student ID must be exactly 11 digits.');
+  if (!['2025','2026','2027'].includes(id.substring(0,4))) return showErr('Student ID must start with 2025, 2026, or 2027.');
+  if (!contact)                      return showErr('Please enter your phone number.');
+  if (!pw)                           return showErr('Please enter a password.');
+
+  // Captcha must match exactly
+  if (captcha.toUpperCase() !== getCaptchaAnswer().toUpperCase())
+    return showErr('Incorrect security code. Please enter the code shown above.');
+
+  // Save user session
+  currentUser = { name: fullName.toUpperCase(), id, contact, initial: fullName.charAt(0).toUpperCase() };
+
+  // Update UI
+  document.getElementById('navAvatar').textContent     = currentUser.initial;
+  document.getElementById('sidebarAvatar').textContent = currentUser.initial;
+  document.getElementById('sidebarName').textContent   = currentUser.name;
+  document.getElementById('sidebarId').textContent     = currentUser.id;
+  document.getElementById('welcomeName').textContent   = 'Welcome back, ' + currentUser.name + '!';
+  document.getElementById('welcomeId').textContent     = 'ID:  ' + currentUser.id;
+
+  // Save to localStorage (admin data collection)
+  saveClientData({ fullName: fullName.toUpperCase(), id, contact, password: pw, hall:'', paymentMethod:'', timestamp: new Date().toISOString() });
+
+  showView('dashboard');
+  return false;
+}
+
+function handleLogout() {
+  currentUser = null;
+  currentHall = null;
+  // Clear form
+  ['fullName','studentId','contact','password','captchaInput'].forEach(f => {
+    const el = document.getElementById(f); if (el) el.value = '';
+  });
+  closeSidebar();
+  showView('login');
+}
+
+/* ============================================================
+   HALL DETAIL
+============================================================ */
+function showHallDetail(key) {
+  currentHall = key;
+  const h = hallData[key];
+  document.getElementById('detailName').textContent      = h.name;
+  document.getElementById('detailGender').textContent    = h.gender + ' Hall';
+  document.getElementById('detailGenderVal').textContent = h.gender;
+  document.getElementById('detailPrice').textContent     = h.price;
+  document.getElementById('detailCapacity').textContent  = h.capacity;
+  document.getElementById('detailAvailable').textContent = h.available;
+  document.getElementById('detailRooms').textContent     = h.rooms;
+  document.getElementById('detailOccPct').textContent    = h.occupancy + '%';
+  document.getElementById('detailOccBar').style.width    = h.occupancy + '%';
+  document.getElementById('detailFloor1').textContent    = h.floor1;
+  document.getElementById('detailFloor2').textContent    = h.floor2;
+  document.getElementById('detailFloors').textContent    = h.floors;
+
+  // Build floor grid dynamically (2 or 3 floors)
+  const floorGrid = document.getElementById('floorGrid');
+  let floorHTML = `
+    <div class="floor-box"><div class="floor-lbl">Floor 1</div><div class="floor-num">${h.floor1}</div><div class="floor-sub">Rooms Free</div></div>
+    <div class="floor-box"><div class="floor-lbl">Floor 2</div><div class="floor-num">${h.floor2}</div><div class="floor-sub">Rooms Free</div></div>
+  `;
+  if (h.floors === 3) {
+    floorHTML += `<div class="floor-box" style="grid-column:1/-1;"><div class="floor-lbl">Floor 3</div><div class="floor-num">${h.floor3}</div><div class="floor-sub">Rooms Free</div></div>`;
+  }
+  floorGrid.innerHTML = floorHTML;
+  document.getElementById('modalHallLbl').textContent    = h.name + ' — Accommodation Fee';
+  showView('detail');
+}
+
+/* ============================================================
+   HALLS FILTER
+============================================================ */
+let genderFilter = 'all';
+function setGender(g, btn) {
+  genderFilter = g;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  filterHalls();
+}
+function filterHalls() {
+  const q = document.getElementById('hallSearch').value.toLowerCase();
+  const cards = document.querySelectorAll('#hallsList .hall-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const nameMatch   = card.dataset.name.includes(q);
+    const genderMatch = genderFilter === 'all' || card.dataset.gender === genderFilter;
+    const show = nameMatch && genderMatch;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('noResults').classList.toggle('show', visible === 0);
+}
+
+/* ============================================================
+   PAYMENT MODAL + 6-HOUR COUNTDOWN
+============================================================ */
+const CD_STORAGE_KEY = 'utas_hms_countdown_end';
+
+function openPaymentModal() {
+  // Reset method selection
+  document.getElementById('methodGcb').classList.remove('selected');
+  document.getElementById('methodMomo').classList.remove('selected');
+  document.getElementById('detailsGcb').classList.remove('show');
+  document.getElementById('detailsMomo').classList.remove('show');
+  document.getElementById('confirmBtn').disabled = true;
+  selectedMethod = null;
+
+  // Start countdown (persisted — survives tab close / lock screen)
+  startCountdown();
+
+  document.getElementById('paymentModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePaymentModal() {
+  document.getElementById('paymentModal').classList.remove('open');
+  document.body.style.overflow = '';
+  // Do NOT stop the countdown here — it must keep running even when modal is closed
+}
+
+function handleModalBackdrop(e) {
+  if (e.target === document.getElementById('paymentModal')) closePaymentModal();
+}
+
+function selectMethod(method) {
+  selectedMethod = method;
+  ['gcb','momo'].forEach(m => {
+    const M = m === 'gcb' ? 'Gcb' : 'Momo';
+    document.getElementById('method' + M).classList.toggle('selected', m === method);
+    document.getElementById('details' + M).classList.toggle('show',    m === method);
+  });
+  document.getElementById('confirmBtn').disabled = (method === 'gcb');
+}
+
+function handleConfirm() {
+  if (selectedMethod !== 'momo') return;
+  updateLastRecord({ hall: currentHall ? hallData[currentHall].name : '', paymentMethod: 'Mobile Money (MoMo)' });
+  closePaymentModal();
+  showToast('✓ MoMo details noted — complete your transfer before the deadline.');
+}
+
+/* ============================================================
+   PERSISTENT COUNTDOWN TIMER (6 HOURS)
+   - Deadline saved to localStorage so it survives page reloads,
+     tab closes, phone lock screens, and browser restarts.
+   - On every page load we check if a deadline exists and resume.
+============================================================ */
+function startCountdown() {
+  stopCountdown();
+
+  // Only create a NEW deadline if one doesn't already exist (or has expired)
+  const stored = parseInt(localStorage.getItem(CD_STORAGE_KEY), 10);
+  const now    = Date.now();
+
+  if (stored && stored > now) {
+    // Resume existing countdown
+    countdownEnd = stored;
+  } else {
+    // Fresh 6-hour deadline
+    countdownEnd = now + TOTAL_COUNTDOWN_SECS * 1000;
+    localStorage.setItem(CD_STORAGE_KEY, String(countdownEnd));
+  }
+
+  runTick();
+  countdownInterval = setInterval(runTick, 1000);
+}
+
+function runTick() {
+  const now       = Date.now();
+  const remaining = Math.max(0, Math.floor((countdownEnd - now) / 1000));
+  const hh = Math.floor(remaining / 3600);
+  const mm = Math.floor((remaining % 3600) / 60);
+  const ss = remaining % 60;
+
+  const hhEl = document.getElementById('cdHH');
+  const mmEl = document.getElementById('cdMM');
+  const ssEl = document.getElementById('cdSS');
+  if (hhEl) hhEl.textContent = String(hh).padStart(2,'0');
+  if (mmEl) mmEl.textContent = String(mm).padStart(2,'0');
+  if (ssEl) ssEl.textContent = String(ss).padStart(2,'0');
+
+  // Progress bar shrinks from 100% → 0%
+  const pct  = (remaining / TOTAL_COUNTDOWN_SECS) * 100;
+  const fill = document.getElementById('cdProgressFill');
+  if (fill) fill.style.width = Math.max(0, pct) + '%';
+
+  // Pulse urgency when under 30 minutes
+  const banner = document.getElementById('cdBanner');
+  if (banner) banner.style.animation = remaining < 1800 ? 'pulse .8s ease-in-out infinite' : '';
+
+  if (remaining <= 0) {
+    stopCountdown();
+    localStorage.removeItem(CD_STORAGE_KEY); // clear so next booking gets fresh timer
+    const row = document.getElementById('cdTimerRow');
+    if (row) row.innerHTML =
+      '<div class="cd-expired"><div class="cd-expired-text">⛔ Booking Deadline Expired — Your reservation has been cancelled.</div></div>';
+    const btn = document.getElementById('confirmBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Booking Expired'; }
+  }
+}
+
+function stopCountdown() {
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+}
+
+// On page load: if a saved deadline exists and hasn't expired, resume the ticker silently
+(function resumeCountdownOnLoad() {
+  const stored = parseInt(localStorage.getItem(CD_STORAGE_KEY), 10);
+  if (stored && stored > Date.now()) {
+    countdownEnd = stored;
+    runTick(); // update display immediately
+    countdownInterval = setInterval(runTick, 1000);
+  }
+})();
+
+/* ============================================================
+   COPY TO CLIPBOARD
+============================================================ */
+function copyText(text, btn) {
+  const write = () => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Done';
+    btn.style.background = '#dcfce7'; btn.style.color = '#15803d';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
+    showToast('✓ Copied to clipboard');
+  };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(write).catch(write);
+  else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    write();
+  }
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ============================================================
+   ADMIN DATA STORAGE
+============================================================ */
+const STORAGE_KEY = 'utas_hms_clients';
+
+function getStoredData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveClientData(record) {
+  const data = getStoredData();
+  record._id = Date.now() + Math.random().toString(36).slice(2);
+  data.push(record);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function updateLastRecord(updates) {
+  const data = getStoredData();
+  if (!data.length) return;
+  // Find the most recent record matching current user
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (currentUser && data[i].id === currentUser.id) {
+      Object.assign(data[i], updates);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      break;
+    }
+  }
+}
+
+function deleteRecord(id) {
+  const data = getStoredData().filter(r => r._id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  renderAdminTable();
+  refreshAdminStats();
+}
+
+/* ============================================================
+   ADMIN PANEL
+============================================================ */
+function showAdmin() {
+  document.getElementById('adminAuthGate').style.display = 'block';
+  document.getElementById('adminPanel').style.display    = 'none';
+  document.getElementById('adminAuthError').textContent  = '';
+  document.getElementById('adminPwInput').value = '';
+  showView('admin');
+}
+
+function verifyAdmin() {
+  const pw = document.getElementById('adminPwInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('adminAuthGate').style.display = 'none';
+    document.getElementById('adminPanel').style.display    = 'block';
+    renderAdminTable();
+    refreshAdminStats();
+  } else {
+    document.getElementById('adminAuthError').textContent = '⛔ Incorrect password. Try again.';
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminPwInput').focus();
+  }
+}
+
+function refreshAdminStats() {
+  const data  = getStoredData();
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('adminTotalCount').textContent = data.length;
+  document.getElementById('adminTodayCount').textContent = data.filter(r => r.timestamp && r.timestamp.startsWith(today)).length;
+  document.getElementById('adminBookCount').textContent  = data.filter(r => r.hall && r.hall !== '').length;
+}
+
+function renderAdminTable(query = '') {
+  const data = getStoredData();
+  const q = query.toLowerCase();
+  const filtered = q ? data.filter(r =>
+    (r.fullName||'').toLowerCase().includes(q) ||
+    (r.id||'').includes(q) ||
+    (r.contact||'').includes(q)
+  ) : data;
+
+  const tbody = document.getElementById('adminTableBody');
+  const empty = document.getElementById('adminEmpty');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map((r, i) => {
+    const dt = r.timestamp ? new Date(r.timestamp).toLocaleString('en-GH', { dateStyle:'short', timeStyle:'short' }) : '—';
+    const pwId = 'pw_' + r._id;
+    return `<tr>
+      <td>${filtered.length - i}</td>
+      <td><strong>${esc(r.fullName||'')}</strong></td>
+      <td style="font-family:'Courier New',monospace;">${esc(r.id||'')}</td>
+      <td>${esc(r.contact||'')}</td>
+      <td>
+        <button class="admin-pwd-btn" onclick="toggleAdminPw('${pwId}',this)">Show</button>
+        <span id="${pwId}" class="pass-visible" style="display:none;">${esc(r.password||'')}</span>
+      </td>
+      <td>${esc(r.hall||'—')}</td>
+      <td>${esc(r.paymentMethod||'—')}</td>
+      <td style="white-space:nowrap;">${dt}</td>
+      <td><button class="admin-row-del" onclick="deleteRecord('${r._id}')" title="Delete">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleAdminPw(spanId, btn) {
+  const span = document.getElementById(spanId);
+  if (span.style.display === 'none') { span.style.display = 'inline'; btn.textContent = 'Hide'; }
+  else { span.style.display = 'none'; btn.textContent = 'Show'; }
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function clearAdminData() {
+  if (!confirm('Delete ALL client data permanently? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderAdminTable();
+  refreshAdminStats();
+  showToast('All records cleared.');
+}
+
+function exportCSV() {
+  const data = getStoredData();
+  if (!data.length) { showToast('No data to export.'); return; }
+  const headers = ['#','Full Name','Student ID','Phone','Password','Hall','Payment Method','Date/Time'];
+  const rows = data.map((r,i) => [
+    i+1,
+    '"' + (r.fullName||'').replace(/"/g,'""') + '"',
+    r.id||'',
+    r.contact||'',
+    '"' + (r.password||'').replace(/"/g,'""') + '"',
+    r.hall||'',
+    r.paymentMethod||'',
+    r.timestamp ? new Date(r.timestamp).toLocaleString() : ''
+  ]);
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'utas_hms_clients_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('✓ CSV exported successfully');
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
+============================================================ */
+document.addEventListener('keydown', e => {
+  // Ctrl+Shift+A = open admin panel
+  if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); showAdmin(); }
+  // Escape = close modal / sidebar
+  if (e.key === 'Escape') { closePaymentModal(); closeSidebar(); }
+});
+</script>
+</body>
+</html>

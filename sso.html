@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTAS Student Portal Gateway</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #1a2a4a 0%, #0f1c35 50%, #1a1a2e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 32px 24px 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo-box {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      background: var(--gray-100);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-md);
+    }
+    .logo-svg {
+      width: 52px; height: 52px;
+    }
+    .portal-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--gray-900);
+      line-height: 1.1;
+    }
+    .portal-subtitle {
+      font-size: 14px;
+      color: var(--gray-400);
+      margin-top: 6px;
+      font-weight: 400;
+    }
+
+    /* Service access card */
+    .service-card {
+      background: linear-gradient(135deg, #1a2a4a 0%, #0f1c35 100%);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 50%;
+    }
+    .service-card-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .service-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+    }
+    .service-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: space-between;
+    }
+    .service-badge-access {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(22,163,74,0.25);
+      color: #4ade80;
+      border: 1px solid rgba(74,222,128,0.3);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .service-badge-hms {
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .service-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .service-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 12px;
+    }
+    .service-desc strong { color: rgba(255,255,255,0.9); }
+    .service-link-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .service-url {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+    }
+    .service-url .lock { color: #4ade80; font-size: 11px; }
+    .cancel-link {
+      font-size: 12px;
+      color: #60a5fa;
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    /* Form styles */
+    .captcha-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .captcha-display {
+      flex: 1;
+      background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .captcha-display::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(30deg, transparent, transparent 3px, rgba(100,120,200,0.04) 3px, rgba(100,120,200,0.04) 6px),
+        repeating-linear-gradient(-30deg, transparent, transparent 3px, rgba(200,100,100,0.04) 3px, rgba(200,100,100,0.04) 6px);
+    }
+    .c1 { color: #2563eb; display: inline-block; transform: rotate(-8deg) translateY(2px); }
+    .c2 { color: #1f2937; display: inline-block; transform: rotate(4deg); }
+    .c3 { color: #ea580c; display: inline-block; transform: rotate(-4deg) translateY(-2px); }
+    .c4 { color: #374151; display: inline-block; transform: rotate(6deg) translateY(3px); }
+    .c5 { color: #1d4ed8; display: inline-block; transform: rotate(-6deg); font-size: 22px; }
+    .c6 { color: #15803d; display: inline-block; transform: rotate(8deg) translateY(-1px); }
+
+    .captcha-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--gray-700);
+      min-width: 28px;
+      text-align: center;
+    }
+    .refresh-link {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--gray-500);
+      background: none;
+      border: none;
+      cursor: pointer;
+      float: right;
+    }
+    .captcha-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .security-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-700);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .sign-in-btn {
+      width: 100%;
+      padding: 16px;
+      background: #1a2a4a;
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .sign-in-btn:hover {
+      background: #243a5e;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(26,42,74,0.35);
+    }
+
+    .secured-text {
+      text-align: center;
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 14px;
+    }
+
+    .sso-footer {
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <div class="logo-box">
+        <!-- UTAS emblem SVG placeholder -->
+        <svg class="logo-svg" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="26" cy="26" r="24" fill="#fff" stroke="#8B0000" stroke-width="2.5"/>
+          <circle cx="26" cy="26" r="19" fill="#fff" stroke="#8B0000" stroke-width="1.5"/>
+          <circle cx="26" cy="26" r="10" fill="#8B0000"/>
+          <path d="M26 16 L30 24 L22 24 Z" fill="#fff"/>
+          <!-- gear teeth simplified -->
+          <circle cx="26" cy="26" r="5" fill="#fff"/>
+          <rect x="24.5" y="10" width="3" height="4" rx="1" fill="#8B0000"/>
+          <rect x="24.5" y="38" width="3" height="4" rx="1" fill="#8B0000"/>
+          <rect x="10" y="24.5" width="4" height="3" rx="1" fill="#8B0000"/>
+          <rect x="38" y="24.5" width="4" height="3" rx="1" fill="#8B0000"/>
+          <rect x="14.5" y="14.5" width="3" height="3" rx="1" fill="#8B0000" transform="rotate(45 16 16)"/>
+          <rect x="34.5" y="14.5" width="3" height="3" rx="1" fill="#8B0000" transform="rotate(45 36 16)"/>
+          <rect x="14.5" y="34.5" width="3" height="3" rx="1" fill="#8B0000" transform="rotate(45 16 36)"/>
+          <rect x="34.5" y="34.5" width="3" height="3" rx="1" fill="#8B0000" transform="rotate(45 36 36)"/>
+          <!-- laurel hint -->
+          <path d="M14 32 Q10 26 14 20" stroke="#c8a84b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M38 32 Q42 26 38 20" stroke="#c8a84b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="portal-title">UTAS Student Portal<br/>Gateway</div>
+      <div class="portal-subtitle">Student Sign In</div>
+    </div>
+
+    <!-- Service Access Card -->
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-avatar"></div>
+        <div class="service-badges">
+          <div class="service-badge-access">
+            <span>🔒</span> SERVICE ACCESS
+          </div>
+          <div class="service-badge-hms">HMS</div>
+        </div>
+      </div>
+      <div class="service-title">Hostel Management System</div>
+      <div class="service-desc">Sign in to continue to <strong>Hostel Management System</strong></div>
+      <div class="service-link-row">
+        <div class="service-url">
+          <span class="lock">🔒</span>
+          <span>hostels.utas.edu.gh</span>
+        </div>
+        <button class="cancel-link" onclick="window.location.href='sso.html'">Cancel &amp; Return</button>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    <div id="errorMsg" style="display:none; background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:10px 14px; border-radius:10px; font-size:13px; margin-bottom:16px; font-weight:500;"></div>
+
+    <!-- Form -->
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input class="form-input" type="text" id="fullName" placeholder="Enter your full name" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Student ID</label>
+        <div class="input-wrap">
+          <span class="input-icon">🎓</span>
+          <input class="form-input" type="text" id="studentId" placeholder="e.g. 2025XXXXXXX" autocomplete="off" maxlength="10" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contact (Phone Number)</label>
+        <div class="input-wrap">
+          <span class="input-icon">📱</span>
+          <input class="form-input" type="tel" id="contact" placeholder="Enter your phone number" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input" type="password" id="password" placeholder="Enter any password" />
+          <button type="button" class="input-suffix" onclick="togglePw(this)">👁</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="captcha-label-row">
+          <span class="security-label">Security Code</span>
+          <button type="button" class="refresh-link" onclick="refreshCaptcha()">↻ Refresh</button>
+        </div>
+        <div class="captcha-row">
+          <div class="captcha-display" id="captchaDisplay">
+            <span class="c1">6</span><span class="c2">B</span><span class="c3">8</span><span class="c4">X</span><span class="c5">D</span><span class="c6">H</span>
+          </div>
+          <div class="captcha-num" id="captchaNum">6</div>
+        </div>
+        <div class="input-wrap" style="margin-top:10px;">
+          <span class="input-icon">✏️</span>
+          <input class="form-input" type="text" id="captchaInput" placeholder="Enter the code above" autocomplete="off" />
+        </div>
+      </div>
+
+      <button type="submit" class="sign-in-btn">
+        Sign In to Student Portal &nbsp;→
+      </button>
+    </form>
+
+    <div class="secured-text">🔒 Secured by UTAS Portal Services</div>
+  </div>
+
+  <div class="sso-footer">
+    © 2026 University of Technology and Applied Sciences. All Rights Reserved.
+  </div>
+
+  <script>
+    function togglePw(btn) {
+      const input = btn.previousElementSibling;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+      }
+    }
+
+    const captchas = [
+      { chars: ['6','B','8','X','D','H'], num: 6 },
+      { chars: ['A','3','K','7','P','2'], num: 3 },
+      { chars: ['M','5','R','9','T','4'], num: 5 },
+      { chars: ['Z','1','W','8','Q','6'], num: 1 },
+    ];
+    let currentCaptcha = 0;
+
+    function refreshCaptcha() {
+      currentCaptcha = (currentCaptcha + 1) % captchas.length;
+      const c = captchas[currentCaptcha];
+      const classes = ['c1','c2','c3','c4','c5','c6'];
+      const display = document.getElementById('captchaDisplay');
+      display.innerHTML = c.chars.map((ch, i) => `<span class="${classes[i]}">${ch}</span>`).join('');
+      document.getElementById('captchaNum').textContent = c.num;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function clearError() {
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      clearError();
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const id       = document.getElementById('studentId').value.trim();
+      const contact  = document.getElementById('contact').value.trim();
+      const pw       = document.getElementById('password').value.trim();
+
+      // 1. Full name required
+      if (!fullName) {
+        showError('Please enter your full name.');
+        return;
+      }
+
+      // 2. Student ID: exactly 10 digits, starts with 2025, 2026, or 2027
+      if (!/^\d{10}$/.test(id)) {
+        showError('Student ID must be exactly 10 digits (e.g. 2025XXXXXXX).');
+        return;
+      }
+      const prefix = id.substring(0, 4);
+      if (!['2025','2026','2027'].includes(prefix)) {
+        showError('Student ID must start with 2025, 2026, or 2027.');
+        return;
+      }
+
+      // 3. Contact required
+      if (!contact) {
+        showError('Please enter your phone number.');
+        return;
+      }
+
+      // 4. Password required (any value accepted)
+      if (!pw) {
+        showError('Please enter a password.');
+        return;
+      }
+
+      // Save to sessionStorage so dashboard can read them
+      sessionStorage.setItem('utas_name',    fullName.toUpperCase());
+      sessionStorage.setItem('utas_id',      id);
+      sessionStorage.setItem('utas_contact', contact);
+      // First letter of first word for avatar
+      sessionStorage.setItem('utas_initial', fullName.charAt(0).toUpperCase());
+
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>
